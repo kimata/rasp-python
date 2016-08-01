@@ -71,10 +71,12 @@ class TSL2561:
         self.enable()
         self.wait()
 
-        value = self.i2cbus.read(self.dev_addr, self.REG_DATA, 5)
+        value = self.i2cbus.read(self.dev_addr, 5, self.REG_DATA)
 
-        ch0 = float(struct.unpack('<H', ''.join(map(chr, value[1:3])))[0])
-        ch1 = float(struct.unpack('<H', ''.join(map(chr, value[3:5])))[0])
+        temp = struct.unpack('>H', bytes(value[0:2]))[0]
+        
+        ch0 = float(struct.unpack('<H', bytes(value[1:3]))[0])
+        ch1 = float(struct.unpack('<H', bytes(value[3:5]))[0])
 
         self.disable()
 
@@ -107,4 +109,4 @@ if __name__ == '__main__':
     I2C_BUS		= 0x1   # Raspberry Pi
 
     tsl2561 = sensor.tsl2561.TSL2561(I2C_BUS)
-    print 'LUX: %d' % (tsl2561.get_lux())
+    print('LUX: %d' % (tsl2561.get_lux()))
