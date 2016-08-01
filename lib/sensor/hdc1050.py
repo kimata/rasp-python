@@ -22,12 +22,24 @@ class HDC1050:
     REG_TEMP		= 0x00
     REG_HUMI		= 0x01
     REG_CONF		= 0x02
+    REG_DEV_ID		= 0xFF
 
     def __init__(self, bus, dev_addr=DEV_ADDR):
         self.bus = bus
         self.dev_addr = dev_addr
         self.i2cbus = i2cbus.I2CBus(bus)
 
+    def ping(self):
+        dev_id = None
+        try:
+            self.i2cbus.write(self.DEV_ADDR, self.REG_DEV_ID)
+            value = self.i2cbus.read(self.DEV_ADDR, 2, self.REG_DEV_ID)
+            dev_id = struct.unpack('>H', bytes(value[0:2]))[0]
+        except:
+            pass
+
+        return dev_id == 0x1050
+    
     def get_value(self):
         self.i2cbus.write(self.dev_addr, self.REG_TEMP)
         time.sleep(0.05)

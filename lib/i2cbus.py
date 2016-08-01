@@ -31,7 +31,7 @@ class I2CBus:
         fcntl.ioctl(self.wh, self.I2C_SLAVE, dev_addr)
         fcntl.ioctl(self.rh, self.I2C_SLAVE, dev_addr)
 
-        # reg_addr が省略されてた場合の処理
+        # reg_addr が指定されてた場合の処理
         if not reg_addr is None:
             self.wh.write(bytearray([reg_addr]))
             

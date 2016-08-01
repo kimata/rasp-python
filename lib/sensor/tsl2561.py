@@ -23,6 +23,7 @@ class TSL2561:
     REG_CTRL		= 0x80
     REG_TIMING		= 0x81
     REG_DATA		= 0x9B
+    REG_ID		= 0x8A
 
     INTEG_13MS      	= 0x00
     INTEG_101MS     	= 0x01
@@ -65,7 +66,17 @@ class TSL2561:
             time.sleep(0.102)
         if self.integ == self.INTEG_402MS:
             time.sleep(0.403)        
-        
+
+    def ping(self):
+        dev_id = None
+        try:
+            value = self.i2cbus.read(self.DEV_ADDR, 1, self.REG_ID)
+            dev_id = struct.unpack('B', bytes(value))[0]
+        except:
+            pass
+
+        return (dev_id >> 4) == 0x1
+    
     def get_lux(self):
         self.set_timing()
         self.enable()
@@ -102,11 +113,11 @@ class TSL2561:
         else:
             return 0;
 
-
 if __name__ == '__main__':
     # TEST Code
     import sensor.tsl2561
     I2C_BUS		= 0x1   # Raspberry Pi
 
     tsl2561 = sensor.tsl2561.TSL2561(I2C_BUS)
+
     print('LUX: %d' % (tsl2561.get_lux()))
