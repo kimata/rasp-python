@@ -1,4 +1,5 @@
-# coding: utf-8
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 # 
 # Linux で I2C を読み書きするライブラリ．
 # Python の標準ライブラリの smbus だと，read 時もレジスタを
@@ -13,8 +14,8 @@ class I2CBus:
     I2C_SLAVE =      0x0703
     
     def __init__(self, bus):
-        self.wh = io.open('/dev/i2c-' + str(bus), 'wb', buffering=0)
-        self.rh = io.open('/dev/i2c-' + str(bus), 'rb', buffering=0)
+        self.wh = io.open('/dev/i2c-' + str(bus), mode='wb', buffering=0)
+        self.rh = io.open('/dev/i2c-' + str(bus), mode='rb', buffering=0)
 
     def write(self, dev_addr, reg_addr, param=None):
         fcntl.ioctl(self.wh, self.I2C_SLAVE, dev_addr)
@@ -26,20 +27,13 @@ class I2CBus:
             data.append(param)
         self.wh.write(data)
 
-    def read(self, dev_addr, reg_addr, count=None):
+    def read(self, dev_addr, count, reg_addr=None):
         fcntl.ioctl(self.wh, self.I2C_SLAVE, dev_addr)
         fcntl.ioctl(self.rh, self.I2C_SLAVE, dev_addr)
 
-        if count is None:
-            count = reg_addr
-        else:
+        # reg_addr が省略されてた場合の処理
+        if not reg_addr is None:
             self.wh.write(bytearray([reg_addr]))
             
-        data = []
-        data_str = self.rh.read(count)
-        for c in data_str:
-            data.append(ord(c))
-            
-        return data
-
+        return self.rh.read(count)
 

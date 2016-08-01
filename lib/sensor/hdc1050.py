@@ -34,10 +34,10 @@ class HDC1050:
     
         value = self.i2cbus.read(self.DEV_ADDR, 4)
 
-        temp = struct.unpack('>H', ''.join(map(chr, value[0:2])))[0]
+        temp = struct.unpack('>H', bytes(value[0:2]))[0]
         temp = float(temp)/65536*165 - 40
 
-        humi = struct.unpack('>H', ''.join(map(chr, value[2:4])))[0]
+        humi = struct.unpack('>H', bytes(value[2:4]))[0]
         humi = float(humi)/65536*100
 
         return { 'temp': temp, 'humi': humi }
@@ -52,6 +52,4 @@ if __name__ == '__main__':
 
     value = hdc1050.get_value()
     
-    print 'TEMP: %.1f, HUMI: %.1f' % (value['temp'], value['humi'])
-
-
+    print('TEMP: %.1f, HUMI: %.1f' % (value['temp'], value['humi']))
