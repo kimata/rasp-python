@@ -35,16 +35,7 @@ class I2CBus:
     
     def __init__(self, bus):
         self.fd = posix.open('/dev/i2c-%i' % bus, posix.O_RDWR)
-
-    def __create_write_msg(self, dev_addr, write_dat):
-        write_len = len(write_dat)
-        write_buf = ctypes.create_string_buffer(write_dat, write_len)
-        
-        return I2CMsg(
-            addr=dev_addr, flags=self.I2C_M_IGNORE_NAK,
-            len=write_len, buf=write_buf
-        )
-        
+       
     def read(self, dev_addr, count, reg_addr=None):
         read_buf = ctypes.create_string_buffer(count)
         read_msg = I2CMsg(
@@ -79,35 +70,11 @@ class I2CBus:
         )
         fcntl.ioctl(self.fd, self.I2C_RDWR, rdwr_data)
         
-
-
+    def __create_write_msg(self, dev_addr, write_dat):
+        write_len = len(write_dat)
+        write_buf = ctypes.create_string_buffer(write_dat, write_len)
         
-                                            
-
-
-    
-    # def __init__(self, bus):
-    #     # self.wh = io.open('/dev/i2c-' + str(bus), mode='wb', buffering=0)
-    #     # self.rh = io.open('/dev/i2c-' + str(bus), mode='rb', buffering=0)
-        
-
-    # def write(self, dev_addr, reg_addr, param=None):
-    #     fcntl.ioctl(self.wh, self.I2C_SLAVE, dev_addr)
-    #     data=bytearray()
-    #     data.append(reg_addr)
-    #     if type(param) is list:
-    #         data.extend(param)
-    #     elif not param is None:
-    #         data.append(param)
-    #     self.wh.write(data)
-
-    # def read(self, dev_addr, count, reg_addr=None):
-    #     fcntl.ioctl(self.wh, self.I2C_SLAVE, dev_addr)
-    #     fcntl.ioctl(self.rh, self.I2C_SLAVE, dev_addr)
-        
-    #     # reg_addr が指定されてた場合の処理
-    #     if not reg_addr is None:
-    #         self.wh.write(bytearray([reg_addr]))
-            
-    #     return self.rh.read(count)
-
+        return I2CMsg(
+            addr=dev_addr, flags=self.I2C_M_IGNORE_NAK,
+            len=write_len, buf=write_buf
+        )
