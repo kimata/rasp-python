@@ -68,10 +68,11 @@ class TSL2561:
             time.sleep(0.403)        
 
     def ping(self):
-        dev_id = None
+        dev_id = 0
+
         try:
             value = self.i2cbus.read(self.DEV_ADDR, 1, self.REG_ID)
-            dev_id = struct.unpack('B', bytes(value))[0]
+            dev_id = struct.unpack('B', value)[0]
         except:
             pass
 
@@ -101,7 +102,10 @@ class TSL2561:
         elif (self.integ == self.INTEG_101MS):
             ch0 *= 322.0/81
             ch1 *= 322.0/81
-        
+
+        if (ch0 == 0):
+            return 0
+
         if (ch1/ch0) <= 0.52:
             return 0.0304*ch0 - 0.062*ch0*((ch1/ch0)**1.4)
         elif (ch1/ch0) <= 0.65:
@@ -116,8 +120,11 @@ class TSL2561:
 if __name__ == '__main__':
     # TEST Code
     import sensor.tsl2561
-    I2C_BUS		= 0x1   # Raspberry Pi
+    I2C_BUS = 0x1 # Raspberry Pi
 
     tsl2561 = sensor.tsl2561.TSL2561(I2C_BUS)
+    ping = tsl2561.ping()
+    print('PING: %s' % ping)
 
-    print('LUX: %d' % (tsl2561.get_lux()))
+    if (ping):
+        print('LUX: %d' % tsl2561.get_lux())
