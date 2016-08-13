@@ -57,8 +57,8 @@ class I2CBus:
             for msg in msgs if (msg.flags & self.I2C_M_RD)
         )
 
-    def write(self, dev_addr, reg_addr, *param):
-        write_dat = bytes(bytearray([reg_addr]) + bytearray(param))
+    def write(self, dev_addr, *param):
+        write_dat = bytes(bytearray(param))
         write_msg = self.__create_write_msg(dev_addr, write_dat)
         self.__send(write_msg)
         
