@@ -19,13 +19,9 @@ import i2cbus
 
 class K30:
     DEV_ADDR		= 0x68 # 7bit
-    REG_TEMP		= 0x00
-    REG_HUMI		= 0x01
-    REG_CONF		= 0x02
-    REG_ID		= 0xFF
 
     RAM_CO2		= 0x08
-    EE_METER_CTRL	= 0x03
+    RAM_ID		= 0x2C
     
     WRITE_RAM		= 0x1 << 4
     READ_RAM		= 0x2 << 4
@@ -37,22 +33,25 @@ class K30:
         self.dev_addr = dev_addr
         self.i2cbus = i2cbus.I2CBus(bus)
 
-    # def ping(self):
-    #     dev_id = 0
-    #     # try:
-    #     self.i2cbus.write(self.DEV_ADDR, self.REG_ID)
-    #     value = self.i2cbus.read(self.DEV_ADDR, 2, self.REG_ID)
-    #     dev_id = struct.unpack('>H', bytes(value[0:2]))[0]
-    #     # except:
-    #     #     pass
+    def ping(self):
+        try:
+            command = [ self.READ_RAM|0x3, 0x00, self.RAM_CO2 ]
+            command = self.__compose_command(command)
 
-    #     return dev_id == 0x1050
+            self.i2cbus.write(self.dev_addr, *command)
 
-    def __compose_command(self, command):
-        # print("------")
-        # print(command)
-        # print("------")
+            time.sleep(0.05)
+
+            value = self.i2cbus.read(self.DEV_ADDR, 5)
         
+            if list(bytearray(value)) != \
+               self.__compose_command(list(bytearray(value))[0:4]):
+                raise Exception('invalid sum')
+            return True
+        except:
+            return False
+        
+    def __compose_command(self, command):
         return command + [sum(command)]
     
     def get_value(self):
@@ -82,10 +81,8 @@ if __name__ == '__main__':
 
     k30 = sensor.k30.K30(I2C_BUS)
 
-    # ping = k30.ping()
-    # print('PING: %s' % ping)
-    
-    ping = True
-    
+    ping = k30.ping()
+    print('PING: %s' % ping)
+
     if (ping):
         print('CO2: %d' % k30.get_value())
