@@ -21,7 +21,7 @@ class K30:
     DEV_ADDR		= 0x68 # 7bit
 
     RAM_CO2		= 0x08
-    RAM_ID		= 0x2C
+    RAM_FIRM		= 0x62
     
     WRITE_RAM		= 0x1 << 4
     READ_RAM		= 0x2 << 4
@@ -35,22 +35,17 @@ class K30:
 
     def ping(self):
         try:
-            command = [ self.READ_RAM|0x3, 0x00, self.RAM_CO2 ]
+            command = [ self.READ_RAM|0x1, 0x00, self.RAM_FIRM ]
             command = self.__compose_command(command)
 
             self.i2cbus.write(self.dev_addr, *command)
 
             time.sleep(0.05)
 
-            value = self.i2cbus.read(self.DEV_ADDR, 5)
-        
-            if list(bytearray(value)) != \
-               self.__compose_command(list(bytearray(value))[0:4]):
-                raise Exception('invalid sum')
+            value = self.i2cbus.read(self.DEV_ADDR, 3)
             return True
         except:
             return False
-        
     def __compose_command(self, command):
         return command + [sum(command)]
     
