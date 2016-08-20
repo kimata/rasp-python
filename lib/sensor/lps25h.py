@@ -71,20 +71,26 @@ class LPS25H:
         
     def get_value(self):
         value = self.i2cbus.read(self.DEV_ADDR, 3, self.REG_PRESS)
-        press = struct.unpack('<I', value + b'\0')[0] / 4096.0
+        press = struct.unpack('<I', value + b'\0')[0] / 4096
 
-        return press
+        return [ press ]
 
+    def get_value_map(self):
+        value = self.get_value()
+
+        return { 'PRESS': value[0] }
+    
 if __name__ == '__main__':
     # TEST Code
+    import pprint
     import sensor.lps25h
 
-    I2C_BUS = 0x1 # Raspberry Pi
+    I2C_BUS = 0x1 # I2C のバス番号 (Raspberry Pi は 0x1)
 
     lps25h = sensor.lps25h.LPS25H(I2C_BUS)
     ping = lps25h.ping()
     print('PING: %s' % ping)
 
     if (ping):
-        print('PRESS: %d' % lps25h.get_value())
+        pprint.pprint(lps25h.get_value_map())
 

@@ -78,7 +78,7 @@ class TSL2561:
 
         return (dev_id >> 4) == 0x1
     
-    def get_lux(self):
+    def get_value(self):
         self.set_timing()
         self.enable()
         self.wait()
@@ -104,27 +104,34 @@ class TSL2561:
             ch1 *= 322.0/81
 
         if (ch0 == 0):
-            return 0
+            return [ 0 ]
 
         if (ch1/ch0) <= 0.52:
-            return 0.0304*ch0 - 0.062*ch0*((ch1/ch0)**1.4)
+            return [ int(0.0304*ch0 - 0.062*ch0*((ch1/ch0)**1.4)) ]
         elif (ch1/ch0) <= 0.65:
-            return 0.0224*ch0 - 0.031*ch1
+            return [ int(0.0224*ch0 - 0.031*ch1) ]
         elif (ch1/ch0) <= 0.80:
-            return 0.0128*ch0 - 0.0153*ch1
+            return [ int(0.0128*ch0 - 0.0153*ch1) ]
         elif (ch1/ch0) <= 1.30:
-            return 0.00146*ch0 - 0.00112*ch1;
+            return [ int(0.00146*ch0 - 0.00112*ch1) ]
         else:
-            return 0;
+            return [ 0 ];
 
+    def get_value_map(self):
+        value = self.get_value()
+
+        return { 'LUX': value[0] }
+
+        
 if __name__ == '__main__':
     # TEST Code
+    import pprint
     import sensor.tsl2561
-    I2C_BUS = 0x1 # Raspberry Pi
+    I2C_BUS = 0x1 # I2C のバス番号 (Raspberry Pi は 0x1)
 
     tsl2561 = sensor.tsl2561.TSL2561(I2C_BUS)
     ping = tsl2561.ping()
     print('PING: %s' % ping)
 
     if (ping):
-        print('LUX: %d' % tsl2561.get_lux())
+        pprint.pprint(tsl2561.get_value_map())

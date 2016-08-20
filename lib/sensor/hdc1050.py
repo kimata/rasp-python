@@ -47,18 +47,24 @@ class HDC1050:
         value = self.i2cbus.read(self.DEV_ADDR, 4)
 
         temp = struct.unpack('>H', bytes(value[0:2]))[0]
-        temp = float(temp)/65536*165 - 40
+        temp = round(float(temp)/65536*165 - 40, 2)
 
         humi = struct.unpack('>H', bytes(value[2:4]))[0]
-        humi = float(humi)/65536*100
+        humi = round(float(humi)/65536*100, 2)
 
-        return { 'temp': temp, 'humi': humi }
+        return [ temp, humi ]
+
+    def get_value_map(self):
+        value = self.get_value()
+
+        return { 'TEMP': value[0], 'HUMI': value[1] }
 
 
 if __name__ == '__main__':
     # TEST Code
+    import pprint
     import sensor.hdc1050
-    I2C_BUS = 0x1 # Raspberry Pi
+    I2C_BUS = 0x1 # I2C のバス番号 (Raspberry Pi は 0x1)
 
     hdc1050 = sensor.hdc1050.HDC1050(I2C_BUS)
 
@@ -66,5 +72,4 @@ if __name__ == '__main__':
     print('PING: %s' % ping)
 
     if (ping):
-        value = hdc1050.get_value()
-        print('TEMP: %.1f, HUMI: %.1f' % (value['temp'], value['humi']))
+        pprint.pprint(hdc1050.get_value_map())

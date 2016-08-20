@@ -67,12 +67,18 @@ class K30:
             raise Exception('invalid sum')
 
         co2 = struct.unpack('>H', bytes(value[1:3]))[0]
-        return co2
+        return [ co2 ]
 
+    def get_value_map(self):
+        value = self.get_value()
+
+        return { 'CO2': value[0] }
+    
 if __name__ == '__main__':
     # TEST Code
+    import pprint
     import sensor.k30
-    I2C_BUS = 0x1 # Raspberry Pi
+    I2C_BUS = 0x1 # I2C のバス番号 (Raspberry Pi は 0x1)
 
     k30 = sensor.k30.K30(I2C_BUS)
 
@@ -80,4 +86,5 @@ if __name__ == '__main__':
     print('PING: %s' % ping)
 
     if (ping):
-        print('CO2: %d' % k30.get_value())
+        pprint.pprint(k30.get_value_map())
+
