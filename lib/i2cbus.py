@@ -39,7 +39,7 @@ class I2CBus:
     def read(self, dev_addr, count, reg_addr=None):
         read_buf = ctypes.create_string_buffer(count)
         read_msg = I2CMsg(
-            addr=dev_addr, flags=self.I2C_M_RD|self.I2C_M_IGNORE_NAK,
+            addr=dev_addr, flags=self.I2C_M_RD,
             len=count, buf=read_buf
         )
         msgs = None
@@ -75,6 +75,6 @@ class I2CBus:
         write_buf = ctypes.create_string_buffer(write_dat, write_len)
         
         return I2CMsg(
-            addr=dev_addr, flags=self.I2C_M_IGNORE_NAK,
+            addr=dev_addr, flags=0x0,
             len=write_len, buf=write_buf
         )

@@ -120,7 +120,7 @@ class TSL2561:
     def get_value_map(self):
         value = self.get_value()
 
-        return { 'LUX': value[0] }
+        return { 'lux': value[0] }
 
         
 if __name__ == '__main__':

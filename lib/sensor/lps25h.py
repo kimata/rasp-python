@@ -78,7 +78,7 @@ class LPS25H:
     def get_value_map(self):
         value = self.get_value()
 
-        return { 'PRESS': value[0] }
+        return { 'press': value[0] }
     
 if __name__ == '__main__':
     # TEST Code

@@ -57,7 +57,7 @@ class HDC1050:
     def get_value_map(self):
         value = self.get_value()
 
-        return { 'TEMP': value[0], 'HUMI': value[1] }
+        return { 'temp': value[0], 'humi': value[1] }
 
 
 if __name__ == '__main__':

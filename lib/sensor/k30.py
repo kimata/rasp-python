@@ -72,7 +72,7 @@ class K30:
     def get_value_map(self):
         value = self.get_value()
 
-        return { 'CO2': value[0] }
+        return { 'co2': value[0] }
     
 if __name__ == '__main__':
     # TEST Code

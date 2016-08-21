@@ -13,6 +13,7 @@
 
 import os
 import sys
+import time
 import json
 
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'lib'))
@@ -34,17 +35,24 @@ def detect_sensor():
     ]
     sensor_list = []
     for dev in candidate_list:
-        for i in xrange(2):
+        for i in xrange(RETRY):
             if dev.ping():
                 sensor_list.append(dev)
                 break
+            time.sleep(0.05)
 
     return sensor_list
 
 def scan_sensor(sensor_list):
     value_map = {}
     for sensor in sensor_list:
-        value_map.update(sensor.get_value_map())
+        for i in xrange(RETRY):
+            try:
+                value_map.update(sensor.get_value_map())
+                break
+            except:
+                pass
+            time.sleep(0.05)
 
     return value_map
 
