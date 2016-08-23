@@ -23,8 +23,9 @@ import sensor.lps25h
 import sensor.tsl2561
 import sensor.k30
 
-I2C_BUS = 0x1 # I2C のバス番号 (Raspberry Pi は 0x1)
-RETRY   = 2   # デバイスをスキャンするときのリトライ回数
+I2C_BUS = 0x1 	# I2C のバス番号 (Raspberry Pi は 0x1)
+RETRY   = 3   	# デバイスをスキャンするときのリトライ回数
+CO2_MAX = 5000 # CO2 濃度の最大値 (時々異常値を返すのでその対策)
 
 def detect_sensor():
     candidate_list = [
@@ -39,7 +40,7 @@ def detect_sensor():
             if dev.ping():
                 sensor_list.append(dev)
                 break
-            time.sleep(0.05)
+            time.sleep(0.1)
 
     return sensor_list
 
@@ -48,11 +49,17 @@ def scan_sensor(sensor_list):
     for sensor in sensor_list:
         for i in xrange(RETRY):
             try:
-                value_map.update(sensor.get_value_map())
+                val = sensor.get_value_map()
+                if sensor.NAME == 'K30' and val['co2'] > CO2_MAX:
+                    continue
+                if sensor.NAME == 'HDC1050' and val['humi'] == 100:
+                    continue
+                
+                value_map.update(val)
                 break
             except:
                 pass
-            time.sleep(0.05)
+            time.sleep(0.1)
 
     return value_map
 
