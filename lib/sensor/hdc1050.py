@@ -18,6 +18,7 @@ if __name__ == '__main__':
 import i2cbus
 
 class HDC1050:
+    NAME                = "HDC1050"
     DEV_ADDR		= 0x40 # 7bit
     REG_TEMP		= 0x00
     REG_HUMI		= 0x01

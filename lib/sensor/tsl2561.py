@@ -18,6 +18,8 @@ if __name__ == '__main__':
 import i2cbus
 
 class TSL2561:
+    NAME                = "TSL2561"
+    
     DEV_ADDR		= 0x39 # 7bit
     
     REG_CTRL		= 0x80

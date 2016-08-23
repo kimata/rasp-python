@@ -18,6 +18,8 @@ if __name__ == '__main__':
 import i2cbus
 
 class LPS25H:
+    NAME                = "LPS25H"
+    
     DEV_ADDR		= 0x5C # 7bit
     REG_CTRL1		= 0x20
     REG_CTRL2		= 0x21
@@ -63,13 +65,16 @@ class LPS25H:
         return dev_id == 0xBD
 
     def enable(self):
-        # 25Hz で変換を行い 32 サンプルの平均を取る
-        self.i2cbus.write(self.dev_addr, self.REG_RES, self.AVE_32)
+        # 25Hz で変換を行い 8 サンプルの平均を取る
+        self.i2cbus.write(self.dev_addr, self.REG_RES, self.AVE_8)
         self.i2cbus.write(self.dev_addr, self.REG_FIFO, self.MODE_MEAN)
         self.i2cbus.write(self.dev_addr, self.REG_CTRL2, self.FIFO_ENABLE)
         self.i2cbus.write(self.dev_addr, self.REG_CTRL1, self.POWER_ON | self.RATE_25HZ)
         
     def get_value(self):
+        self.enable()
+        time.sleep(0.5)
+        
         value = self.i2cbus.read(self.DEV_ADDR, 3, self.REG_PRESS)
         press = struct.unpack('<I', value + b'\0')[0] / 4096
 

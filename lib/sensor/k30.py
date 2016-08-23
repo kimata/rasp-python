@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# K30 を使って温度や湿度を取得するライブラリです．
+# K30 を使って CO2 濃度を取得するライブラリです．
 #
-# 作成時に使用したのは，Strawberry Linux の
-#「K30 １チップ温度・湿度センサ・モジュール」．
-# http://strawberry-linux.com/catalog/items?code=81050
+# 作成時に使用したのは，SenseAir の
+#「CO2 Engine 30」．
+# http://senseair.se/products/oem-modules/k30/
 
 import time
 import struct
@@ -18,6 +18,8 @@ if __name__ == '__main__':
 import i2cbus
 
 class K30:
+    NAME                = "K30"
+    
     DEV_ADDR		= 0x68 # 7bit
 
     RAM_CO2		= 0x08
@@ -87,4 +89,3 @@ if __name__ == '__main__':
 
     if (ping):
         pprint.pprint(k30.get_value_map())
-
