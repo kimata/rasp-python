@@ -42,9 +42,12 @@ class K30:
 
             self.i2cbus.write(self.dev_addr, *command)
 
-            time.sleep(0.05)
+            time.sleep(0.15)
 
             value = self.i2cbus.read(self.DEV_ADDR, 3)
+
+            time.sleep(0.15)
+
             return True
         except:
             return False
@@ -57,9 +60,11 @@ class K30:
 
         self.i2cbus.write(self.dev_addr, *command)
 
-        time.sleep(0.05)
+        time.sleep(0.15)
 
         value = self.i2cbus.read(self.DEV_ADDR, 4)
+
+        time.sleep(0.15)
 
         if (list(bytearray(value))[0] & 0x1) != 0x1:
             raise Exception('command incomplete')
