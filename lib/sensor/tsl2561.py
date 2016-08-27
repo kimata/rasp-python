@@ -63,11 +63,11 @@ class TSL2561:
 
     def wait(self):
         if self.integ == self.INTEG_13MS:
-            time.sleep(0.14)
+            time.sleep(0.13 + 0.1)
         if self.integ == self.INTEG_101MS:
-            time.sleep(0.102)
+            time.sleep(0.101 + 0.1)
         if self.integ == self.INTEG_402MS:
-            time.sleep(0.403)        
+            time.sleep(0.402 + 0.1)
 
     def ping(self):
         dev_id = 0
