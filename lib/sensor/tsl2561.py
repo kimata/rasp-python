@@ -106,18 +106,18 @@ class TSL2561:
             ch1 *= 322.0/81
 
         if (ch0 == 0):
-            return [ 0 ]
+            return [ 0.0 ]
 
         if (ch1/ch0) <= 0.52:
-            return [ int(0.0304*ch0 - 0.062*ch0*((ch1/ch0)**1.4)) ]
+            return [ 0.0304*ch0 - 0.062*ch0*((ch1/ch0)**1.4) ]
         elif (ch1/ch0) <= 0.65:
-            return [ int(0.0224*ch0 - 0.031*ch1) ]
+            return [ 0.0224*ch0 - 0.031*ch1 ]
         elif (ch1/ch0) <= 0.80:
-            return [ int(0.0128*ch0 - 0.0153*ch1) ]
+            return [ 0.0128*ch0 - 0.0153*ch1 ]
         elif (ch1/ch0) <= 1.30:
-            return [ int(0.00146*ch0 - 0.00112*ch1) ]
+            return [ 0.00146*ch0 - 0.00112*ch1 ]
         else:
-            return [ 0 ];
+            return [ 0.0 ];
 
     def get_value_map(self):
         value = self.get_value()
