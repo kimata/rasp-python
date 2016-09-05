@@ -109,13 +109,13 @@ class TSL2561:
             return [ 0.0 ]
 
         if (ch1/ch0) <= 0.52:
-            return [ 0.0304*ch0 - 0.062*ch0*((ch1/ch0)**1.4) ]
+            return [ round(0.0304*ch0 - 0.062*ch0*((ch1/ch0)**1.4), 1) ]
         elif (ch1/ch0) <= 0.65:
-            return [ 0.0224*ch0 - 0.031*ch1 ]
+            return [ round(0.0224*ch0 - 0.031*ch1, 1) ]
         elif (ch1/ch0) <= 0.80:
-            return [ 0.0128*ch0 - 0.0153*ch1 ]
+            return [ round(0.0128*ch0 - 0.0153*ch1, 1) ]
         elif (ch1/ch0) <= 1.30:
-            return [ 0.00146*ch0 - 0.00112*ch1 ]
+            return [ round(0.00146*ch0 - 0.00112*ch1, 1) ]
         else:
             return [ 0.0 ];
 
