@@ -78,7 +78,7 @@ class LPS25H:
         value = self.i2cbus.read(self.DEV_ADDR, 3, self.REG_PRESS)
         press = struct.unpack('<I', value + b'\0')[0] / 4096
 
-        return [ press ]
+        return [ int(press) ]
 
     def get_value_map(self):
         value = self.get_value()
