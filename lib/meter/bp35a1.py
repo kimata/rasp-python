@@ -12,14 +12,77 @@ if __name__ == '__main__':
 
 class ECHONETLite:
     @classmethod
-    def parse_frame(cls, frame, is_binary=True):
-        pprint.pprint(struct.unpack('B', bytes(frame)))
+    def parse_frame(cls, packet, is_binary=True):
+        frame = {}
 
+        # ヘッダ
+        frame['EHD1'] = struct.unpack('B', packet[0])[0]
+        frame['EHD2'] = struct.unpack('B', packet[1])[0]
+        frame['TID'] = struct.unpack('>H', packet[2:4])[0]
+        if (frame['EHD2'] == 0x81):
+            frame['EDATA'] = cls.parse_data(packet[4:])
+
+        cls.validate_header(frame)
+
+        return frame
+        
+    @classmethod
+    def validate_header(cls, frame):
+        if frame['EHD1'] != 0x10:
+            raise Exception('Invalid EHD1: %d' %frame['EHD1'])
+        if (frame['EHD2'] != 0x81) and (frame['EHD2'] != 0x82):
+            raise Exception('Invalid EHD2: %d' %frame['EHD2'])
+
+    @classmethod
+    def parse_data(cls, packet):
+        data = {}
+        data['SEOJ'] = struct.unpack('>I', chr(0) + packet[0:3])[0]
+        data['DEOJ'] = struct.unpack('>I', chr(0) + packet[3:6])[0]
+        data['ESV'] = struct.unpack('B', packet[6])[0]
+        data['OPC'] = struct.unpack('B', packet[7])[0]
+
+        prop_list = []
+        packet = packet[8:]
+        for i in xrange(data['OPC']):
+            prop = {}
+            prop['EPC'] = struct.unpack('B', packet[0])[0]
+            prop['PDC'] = struct.unpack('B', packet[1])[0]
+            prop['EDT'] = packet[2:(2+prop['PDC'])]
+            prop_list.append(prop)
+        data['prop_list'] = prop_list
+
+        return data
+
+    @classmethod
+    def parse_inst_list(cls, packet):
+        count = struct.unpack('B', packet[0])[0]
+        packet = packet[1:]
+
+        inst_list = []
+        for i in xrange(count):
+            inst_info = {}
+            inst_info['class_group_code'] = struct.unpack('B', packet[0])[0]
+            inst_info['class_code'] = struct.unpack('B', packet[1])[0]
+            inst_info['instance_code'] = struct.unpack('B', packet[2])[0]
+            inst_list.append(inst_info)
+            packet = packet[3:]
+
+        return inst_list
+
+    @classmethod
+    def check_class(cls, inst_list, class_group_code, class_code):
+        for inst_info in inst_list:
+            if (inst_info['class_group_code'] == class_group_code) and \
+               (inst_info['class_code'] == class_code):
+                return True
+
+        return False
+    
 class BP35A1:
     def __init__(self, ser):
         self.ser = ser
         self.opt = None
-        ret = self.__send_command('SKRESET')
+        # ret = self.__send_command('SKRESET')
        
     def get_option(self):
         ret = self.__send_command('ROPT')
@@ -40,7 +103,6 @@ class BP35A1:
         pan_desc = None
         while True:
             command = 'SKSCAN 2 ' + format((1 << 32) - 1, 'x') + ' ' + str(duration)
-            pprint.pprint(command)
             self.__send_command(command)
             
             while True:
@@ -70,7 +132,7 @@ class BP35A1:
         ipv6_addr = self.__send_command_raw(command)
 
         command = 'SKJOIN ' + ipv6_addr
-        pprint.pprint(command)
+
         self.__send_command(command)
 
         while True:
@@ -80,18 +142,20 @@ class BP35A1:
                 return None
             # 接続成功
             if line.startswith('EVENT 25'):
-                pprint.pprint("NG")
+                pprint.pprint('OK')
                 return ipv6_addr
 
-    def receive_udp(self, ipv6_addr):
-        line = self.ser.readline().rstrip().split(' ', 9)
-        
-        if line[0] != 'ERXUDP':
-            return None
-        if line[1] != ipv6_addr:
-            return None
+    def recv_udp(self, ipv6_addr):
+        while True:
+            line = self.ser.readline().rstrip()
+            if line == '':
+                continue
 
-        return line[8]
+            line = line.split(' ', 9)
+            if line[0] != 'ERXUDP':
+                continue
+            if line[1] == ipv6_addr:
+                return line[8]
             
     def __parse_pan_desc(self):
         self.__expect('EPANDESC')
@@ -174,9 +238,25 @@ if __name__ == '__main__':
     if ipv6_addr == None:
         raise Exception('Faile to connect Wi-SUN')
 
-    val = bp35a1.receive_udp(pan_desc)
+    packet = bp35a1.recv_udp(ipv6_addr)
 
-    pprint.pprint(val)
+    frame = meter.bp35a1.ECHONETLite.parse_frame(packet)
+
+    # インスタンスリスト
+    inst_list = meter.bp35a1.ECHONETLite.parse_inst_list(
+        frame['EDATA']['prop_list'][0]['EDT'])
+
+    # 低圧スマート電力量メータクラスがあるか確認
+    is_meter_exit = meter.bp35a1.ECHONETLite.check_class(
+        inst_list, 0x02, 0x88)
+
+    if not is_meter_exit:
+        raise Exception('Meter not fount')
+
+            
+    pprint.pprint(frame)
+    pprint.pprint(inst_list)
+
 
     # ser.write("SKVER\r\n")
     # print(ser.readline()) # エコーバック
