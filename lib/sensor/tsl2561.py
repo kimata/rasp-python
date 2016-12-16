@@ -63,11 +63,11 @@ class TSL2561:
 
     def wait(self):
         if self.integ == self.INTEG_13MS:
-            time.sleep(0.14)
+            time.sleep(0.13 + 0.1)
         if self.integ == self.INTEG_101MS:
-            time.sleep(0.102)
+            time.sleep(0.101 + 0.1)
         if self.integ == self.INTEG_402MS:
-            time.sleep(0.403)        
+            time.sleep(0.402 + 0.1)
 
     def ping(self):
         dev_id = 0
@@ -106,18 +106,18 @@ class TSL2561:
             ch1 *= 322.0/81
 
         if (ch0 == 0):
-            return [ 0 ]
+            return [ 0.0 ]
 
         if (ch1/ch0) <= 0.52:
-            return [ int(0.0304*ch0 - 0.062*ch0*((ch1/ch0)**1.4)) ]
+            return [ round(0.0304*ch0 - 0.062*ch0*((ch1/ch0)**1.4), 1) ]
         elif (ch1/ch0) <= 0.65:
-            return [ int(0.0224*ch0 - 0.031*ch1) ]
+            return [ round(0.0224*ch0 - 0.031*ch1, 1) ]
         elif (ch1/ch0) <= 0.80:
-            return [ int(0.0128*ch0 - 0.0153*ch1) ]
+            return [ round(0.0128*ch0 - 0.0153*ch1, 1) ]
         elif (ch1/ch0) <= 1.30:
-            return [ int(0.00146*ch0 - 0.00112*ch1) ]
+            return [ round(0.00146*ch0 - 0.00112*ch1, 1) ]
         else:
-            return [ 0 ];
+            return [ 0.0 ];
 
     def get_value_map(self):
         value = self.get_value()

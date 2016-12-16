@@ -52,7 +52,7 @@ class K30:
         except:
             return False
     def __compose_command(self, command):
-        return command + [sum(command)]
+        return command + [sum(command) & 0xFF]
     
     def get_value(self):
         command = [ self.READ_RAM|0x2, 0x00, self.RAM_CO2 ]
