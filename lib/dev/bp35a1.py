@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import serial
+import sys
 import pprint
    
 class BP35A1:
@@ -129,7 +130,7 @@ class BP35A1:
     
     def __send_command(self, command):
         if self.debug:
-            pprint.pprint('SEND: ' + command)
+            sys.stderr.write("SEND: %s\n" % pprint.pformat(command))
         ret = self.__send_command_raw(command)
         ret = ret.split(' ', 1)
 
