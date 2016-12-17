@@ -10,7 +10,7 @@ if __name__ == '__main__':
 
 from proto.echonetlite import ECHONETLite
    
-class EchonetEnergyMeter:
+class EchonetEnergy:
     def __init__(self, echonet_if, b_id, b_pass, debug=False):
         echonet_if.set_id(b_route_config.b_id)
         echonet_if.set_password(b_route_config.b_pass)
@@ -84,7 +84,7 @@ if __name__ == '__main__':
     import os.path
 
     from dev.bp35a1 import BP35A1
-    from meter import echonetenergymeter
+    from meter import echonetenergy
 
     # b_route_config.py に以下の変数を定義しておく．
     # - b_id	: B ルート ID
@@ -107,7 +107,7 @@ if __name__ == '__main__':
             return pan_info
 
     echonet_if = BP35A1('/dev/ttyAMA0', True)
-    energy_meter = EchonetEnergyMeter(
+    energy_meter = EchonetEnergy(
         echonet_if,
         b_route_config.b_id,
         b_route_config.b_pass
@@ -115,7 +115,7 @@ if __name__ == '__main__':
     pan_info = get_pan_info(energy_meter)
     energy_meter.connect(pan_info)
     while True:
-        pprint.pprint(energy_meter.get_current_energy())
+        print(energy_meter.get_current_energy())
 
 
 
