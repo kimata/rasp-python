@@ -14,7 +14,7 @@ class BP35A1:
         )
         self.opt = None
         self.debug = debug
-        self.__send_command('SKRESET')
+        self.__send_command_without_check('SKRESET')
        
     def get_option(self):
         ret = self.__send_command('ROPT')
@@ -127,6 +127,16 @@ class BP35A1:
         self.__expect(echo_back(command))
 
         return self.ser.readline().rstrip()
+
+    def __send_command_without_check(self, command):
+        if self.debug:
+            sys.stderr.write("SEND: %s\n" % pprint.pformat(command))
+        self.ser.write(command + "\r")
+
+        # エコーバックが無い場合はそこで終了
+        if self.ser.readline().rstrip() == '':
+            return
+        self.ser.readline()
     
     def __send_command(self, command):
         if self.debug:
@@ -137,7 +147,7 @@ class BP35A1:
         if ret[0] != 'OK':
             raise Exception("Status is not OK.\nrst: %s" %
                             ret[0])
-
+        
         return None if len(ret) == 1 else ret[1]
 
     def __expect(self, text):

@@ -2,9 +2,10 @@
 # -*- coding: utf-8 -*-
 
 import struct
-    
+import pickle
+import os.path
+
 if __name__ == '__main__':
-    import os
     import sys
     sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir))
 
@@ -12,8 +13,8 @@ from proto.echonetlite import ECHONETLite
    
 class EchonetEnergy:
     def __init__(self, echonet_if, b_id, b_pass, debug=False):
-        echonet_if.set_id(b_route_config.b_id)
-        echonet_if.set_password(b_route_config.b_pass)
+        echonet_if.set_id(b_id)
+        echonet_if.set_password(b_pass)
         
         self.echonet_if = echonet_if
         self.ipv6_addr = None
@@ -76,37 +77,38 @@ class EchonetEnergy:
                     continue
                 return struct.unpack('>I', prop['EDT'])[0]
 
+PAN_DESC_DAT = '/tmp/pan_desc.dat'
+
+# PAN ID の探索 (キャッシュ付き)
+def get_pan_info(energy_meter):
+    if (os.path.exists(PAN_DESC_DAT)):
+        with open(PAN_DESC_DAT, mode='rb') as f:
+            try:
+                return pickle.load(f)
+            except:
+                pass
+
+    pan_info = energy_meter.get_pan_info()
+    
+    with open(PAN_DESC_DAT, mode='wb') as f:
+        pickle.dump(pan_info, f)
+            
+    return pan_info
+
 if __name__ == '__main__':
     # TEST Code
     import pprint
-    
-    import pickle
-    import os.path
 
     from dev.bp35a1 import BP35A1
-    from meter import echonetenergy
+    from meter.echonetenergy import EchonetEnergy
 
     # b_route_config.py に以下の変数を定義しておく．
     # - b_id	: B ルート ID
     # - b_pass	: B ルートパスワード
     import b_route_config
 
-    PAN_DESC_DAT = 'pan_desc.dat'
-
-    # PAN ID の探索は時間がかかるので，キャッシュしておく
-    def get_pan_info(energy_meter):
-        if (os.path.exists(PAN_DESC_DAT)):
-            with open(PAN_DESC_DAT, mode='rb') as f:
-                return pickle.load(f)
-        else:
-            pan_info = energy_meter.get_pan_info()
-
-            with open(PAN_DESC_DAT, mode='wb') as f:
-                pickle.dump(pan_info, f)
-
-            return pan_info
-
-    echonet_if = BP35A1('/dev/ttyAMA0', True)
+    # True だとデバッグ出力有り
+    echonet_if = BP35A1('/dev/ttyS0', True)
     energy_meter = EchonetEnergy(
         echonet_if,
         b_route_config.b_id,
@@ -114,8 +116,6 @@ if __name__ == '__main__':
     )
     pan_info = get_pan_info(energy_meter)
     energy_meter.connect(pan_info)
+
     while True:
         print(energy_meter.get_current_energy())
-
-
-
