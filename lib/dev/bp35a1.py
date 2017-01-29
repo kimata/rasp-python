@@ -67,7 +67,7 @@ class BP35A1:
 
         self.__send_command(command)
 
-        while True:
+        for i in range(0, 30):
             line = self.ser.readline()
             # 接続失敗
             if line.startswith('EVENT 24'):
@@ -75,6 +75,8 @@ class BP35A1:
             # 接続成功
             if line.startswith('EVENT 25'):
                 return ipv6_addr
+        # タイムアウト
+        return None
 
     def recv_udp(self, ipv6_addr, wait_count=10):
         for i in xrange(wait_count):
