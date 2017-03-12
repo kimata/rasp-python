@@ -26,6 +26,10 @@ energy_meter = EchonetEnergy(
 pan_info = get_pan_info(energy_meter)
 energy_meter.connect(pan_info)
 
-print(
-    json.dumps({ "power": energy_meter.get_current_energy()})
-)
+power = energy_meter.get_current_energy()
+
+# 値があまりに大きい場合は，エラー扱いにする
+if power > 10000:
+    exit(-1)
+    
+print(json.dumps({ "power": power }))
