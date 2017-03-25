@@ -14,8 +14,11 @@ class BP35A1:
         )
         self.opt = None
         self.debug = debug
+        self.reset()
+
+    def reset(self):
         self.__send_command_without_check('SKRESET')
-       
+
     def get_option(self):
         ret = self.__send_command('ROPT')
         val = int(ret, 16)
