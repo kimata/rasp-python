@@ -23,10 +23,13 @@ energy_meter = EchonetEnergy(
     b_route_config.b_id,
     b_route_config.b_pass
 )
-pan_info = get_pan_info(energy_meter)
-energy_meter.connect(pan_info)
 
-power = energy_meter.get_current_energy()
+try:
+    pan_info = get_pan_info(energy_meter)
+    energy_meter.connect(pan_info)
+    power = energy_meter.get_current_energy()
+except:
+    echonet_if.reset()
 
 # 値があまりに大きい場合は，エラー扱いにする
 if power > 10000:
