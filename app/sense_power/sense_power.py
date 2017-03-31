@@ -18,17 +18,19 @@ from meter.echonetenergy import get_pan_info
 import b_route_config
 
 echonet_if = BP35A1('/dev/ttyS0', False)
-energy_meter = EchonetEnergy(
-    echonet_if,
-    b_route_config.b_id,
-    b_route_config.b_pass
-)
 
 try:
+    energy_meter = EchonetEnergy(
+        echonet_if,
+        b_route_config.b_id,
+        b_route_config.b_pass
+    )
+
     pan_info = get_pan_info(energy_meter)
     energy_meter.connect(pan_info)
     power = energy_meter.get_current_energy()
 except:
+    echonet_if.reset()
     echonet_if.reset()
 
 # 値があまりに大きい場合は，エラー扱いにする
