@@ -66,7 +66,7 @@ class SHT31:
         temp = -45 + (175 *  struct.unpack('>H', bytes(value[0:2]))[0]) / float(2**16 - 1)
         humi = 100 * struct.unpack('>H', bytes(value[3:5]))[0] / float(2**16 - 1)
         
-        return [ temp, humi ]
+        return [ round(temp, 1), round(humi, 1) ]
 
     def get_value_map(self):
         value = self.get_value()
