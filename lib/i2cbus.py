@@ -58,7 +58,7 @@ class I2CBus:
         )
 
     def write(self, dev_addr, *param):
-        write_dat = bytes(bytearray(param))
+        write_dat = bytes(bytearray(*param))
         write_msg = self.__create_write_msg(dev_addr, write_dat)
         self.__send(write_msg)
         

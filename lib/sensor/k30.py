@@ -18,7 +18,7 @@ if __name__ == '__main__':
 import i2cbus
 
 class K30:
-    NAME                = "K30"
+    NAME                = 'K30'
     
     DEV_ADDR		= 0x68 # 7bit
 

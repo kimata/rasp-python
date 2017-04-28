@@ -18,7 +18,7 @@ if __name__ == '__main__':
 import i2cbus
 
 class LPS25H:
-    NAME                = "LPS25H"
+    NAME                = 'LPS25H'
     
     DEV_ADDR		= 0x5C # 7bit
     REG_CTRL1		= 0x20
