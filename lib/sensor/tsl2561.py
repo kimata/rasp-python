@@ -46,14 +46,14 @@ class TSL2561:
         self.i2cbus = i2cbus.I2CBus(bus)
     
     def enable(self):
-        self.i2cbus.write(self.dev_addr, self.REG_CTRL, self.POWER_ON)
+        self.i2cbus.write(self.dev_addr, [self.REG_CTRL, self.POWER_ON])
 
     def disable(self):
-        self.i2cbus.write(self.dev_addr, self.REG_CTRL, self.POWER_OFF)
+        self.i2cbus.write(self.dev_addr, [self.REG_CTRL, self.POWER_OFF])
 
     def set_timing(self):
         value = self.gain | self.integ
-        self.i2cbus.write(self.dev_addr, self.REG_TIMING, value)
+        self.i2cbus.write(self.dev_addr, [self.REG_TIMING, value])
         
     def set_gain(self, gain):
         self.gain = gain

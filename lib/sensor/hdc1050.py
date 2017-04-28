@@ -33,7 +33,7 @@ class HDC1050:
     def ping(self):
         dev_id = 0
         try:
-            self.i2cbus.write(self.DEV_ADDR, self.REG_ID)
+            self.i2cbus.write(self.DEV_ADDR, [self.REG_ID])
             value = self.i2cbus.read(self.DEV_ADDR, 2, self.REG_ID)
             dev_id = struct.unpack('>H', bytes(value[0:2]))[0]
         except:
@@ -42,7 +42,7 @@ class HDC1050:
         return dev_id == 0x1050
     
     def get_value(self):
-        self.i2cbus.write(self.dev_addr, self.REG_TEMP)
+        self.i2cbus.write(self.dev_addr, [self.REG_TEMP])
         time.sleep(0.05)
     
         value = self.i2cbus.read(self.DEV_ADDR, 4)

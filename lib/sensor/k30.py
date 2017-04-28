@@ -40,7 +40,7 @@ class K30:
             command = [ self.READ_RAM|0x1, 0x00, self.RAM_FIRM ]
             command = self.__compose_command(command)
 
-            self.i2cbus.write(self.dev_addr, *command)
+            self.i2cbus.write(self.dev_addr, command)
 
             time.sleep(0.15)
 
@@ -58,7 +58,7 @@ class K30:
         command = [ self.READ_RAM|0x2, 0x00, self.RAM_CO2 ]
         command = self.__compose_command(command)
 
-        self.i2cbus.write(self.dev_addr, *command)
+        self.i2cbus.write(self.dev_addr, command)
 
         time.sleep(0.15)
 

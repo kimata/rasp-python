@@ -20,8 +20,8 @@ import i2cbus
 class SHT31:
     NAME                = 'SHT-31'
     DEV_ADDR		= 0x44 # 7bit
-    REG_MAESURE		= bytearray([0x24, 0x00])
-    REG_STATUS		= bytearray([0xF3, 0x2D])
+    REG_MAESURE		= [0x24, 0x00]
+    REG_STATUS		= [0xF3, 0x2D]
 
     def __init__(self, bus, dev_addr=DEV_ADDR):
         self.bus = bus

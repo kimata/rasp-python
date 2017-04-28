@@ -66,10 +66,10 @@ class LPS25H:
 
     def enable(self):
         # 25Hz で変換を行い 8 サンプルの平均を取る
-        self.i2cbus.write(self.dev_addr, self.REG_RES, self.AVE_8)
-        self.i2cbus.write(self.dev_addr, self.REG_FIFO, self.MODE_MEAN)
-        self.i2cbus.write(self.dev_addr, self.REG_CTRL2, self.FIFO_ENABLE)
-        self.i2cbus.write(self.dev_addr, self.REG_CTRL1, self.POWER_ON | self.RATE_25HZ)
+        self.i2cbus.write(self.dev_addr, [self.REG_RES, self.AVE_8])
+        self.i2cbus.write(self.dev_addr, [self.REG_FIFO, self.MODE_MEAN])
+        self.i2cbus.write(self.dev_addr, [self.REG_CTRL2, self.FIFO_ENABLE])
+        self.i2cbus.write(self.dev_addr, [self.REG_CTRL1, self.POWER_ON | self.RATE_25HZ])
         
     def get_value(self):
         self.enable()
