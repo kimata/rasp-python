@@ -43,7 +43,7 @@ def send_datetime(now):
     now = datetime.datetime.now()
     minute = now.minute
     hour = now.hour
-    day = now.toordinal() - datetime.date(now.year, 1, 1).toordinal() 
+    day = now.toordinal() - datetime.date(now.year, 1, 1).toordinal() + 1
     year = now.year % 100
     wday = now.isoweekday() % 7
     sec = now.second
@@ -147,6 +147,6 @@ while True:
     usec = now.microsecond
 
     # 0 秒になるまで待つ
-    time.sleep(60 - (sec + usec/1000000.0))
+    time.sleep(180 - (sec + usec/1000000.0))
 
     send_datetime(now + datetime.timedelta(minutes=1))
