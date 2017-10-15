@@ -20,7 +20,7 @@ import i2cbus
 class SHT31:
     NAME                = 'SHT-31'
     DEV_ADDR		= 0x44 # 7bit
-    REG_MAESURE		= [0x24, 0x00]
+    REG_MEASURE		= [0x24, 0x00]
     REG_STATUS		= [0xF3, 0x2D]
 
     def __init__(self, bus, dev_addr=DEV_ADDR):
@@ -54,7 +54,7 @@ class SHT31:
         return bytearray(value[2:3])[0] == self.crc(value[0:2])
     
     def get_value(self):
-        self.i2cbus.write(self.dev_addr, self.REG_MAESURE)
+        self.i2cbus.write(self.dev_addr, self.REG_MEASURE)
         time.sleep(0.05)
     
         value = self.i2cbus.read(self.DEV_ADDR, 6)
