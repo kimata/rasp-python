@@ -37,4 +37,4 @@ except:
 if power > 10000:
     exit(-1)
     
-print(json.dumps({ "power": power }))
+print(json.dumps({ 'power': power }))

@@ -243,7 +243,7 @@ class FPlugDevice:
         """
         pval = self.get_prop_value(0x22, epc1 = 0xE2, pdc1 = 0x02)
         
-        return float(pval) / 10.0 if pval else None
+        return float(pval) / 10.0 if pval is not None else None
     
 
     def get_data_dict(self):
