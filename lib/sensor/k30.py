@@ -9,6 +9,8 @@
 
 import time
 import struct
+import sys
+import traceback
 
 if __name__ == '__main__':
     import os
@@ -36,35 +38,53 @@ class K30:
         self.i2cbus = i2cbus.I2CBus(bus)
 
     def ping(self):
+        for i in range(5):
+            if self.ping_impl():
+                return True
+            time.sleep(0.2)
+        return False
+        
+    def ping_impl(self):
         try:
             command = [ self.READ_RAM|0x1, 0x00, self.RAM_FIRM ]
             command = self.__compose_command(command)
 
             self.i2cbus.write(self.dev_addr, command)
 
-            time.sleep(0.15)
+            time.sleep(0.2)
 
             value = self.i2cbus.read(self.DEV_ADDR, 3)
 
-            time.sleep(0.15)
+            time.sleep(0.2)
 
             return True
         except:
             return False
+        
     def __compose_command(self, command):
         return command + [sum(command) & 0xFF]
-    
+
     def get_value(self):
+        error = None
+        for i in range(5):
+            try:
+                return self.get_value_impl()
+            except Exception as e:
+                error = e
+                time.sleep(0.2)
+        raise error
+
+    def get_value_impl(self):
         command = [ self.READ_RAM|0x2, 0x00, self.RAM_CO2 ]
         command = self.__compose_command(command)
 
         self.i2cbus.write(self.dev_addr, command)
 
-        time.sleep(0.15)
+        time.sleep(0.2)
 
         value = self.i2cbus.read(self.DEV_ADDR, 4)
 
-        time.sleep(0.15)
+        time.sleep(0.2)
 
         if (list(bytearray(value))[0] & 0x1) != 0x1:
             raise Exception('command incomplete')
