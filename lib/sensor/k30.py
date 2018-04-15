@@ -36,9 +36,10 @@ class K30:
         self.i2cbus = i2cbus.I2CBus(bus)
 
     def ping(self):
-        for i in range(2):
+        for i in range(4):
             if self.ping_impl():
                 return True
+            time.sleep(0.1)
         return False
 
     def ping_impl(self):
