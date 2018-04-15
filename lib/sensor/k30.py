@@ -36,6 +36,12 @@ class K30:
         self.i2cbus = i2cbus.I2CBus(bus)
 
     def ping(self):
+        for i in range(2):
+            if self.ping_impl():
+                return True
+        return False
+
+    def ping_impl(self):
         try:
             command = [ self.READ_RAM|0x1, 0x00, self.RAM_FIRM ]
             command = self.__compose_command(command)
