@@ -31,6 +31,8 @@ class K30:
     READ_RAM		= 0x2 << 4
     WRITE_EE		= 0x3 << 4
     READ_EE		= 0x4 << 4
+
+    RETRY_COUNT         = 5
     
     def __init__(self, bus, dev_addr=DEV_ADDR):
         self.bus = bus
@@ -38,7 +40,7 @@ class K30:
         self.i2cbus = i2cbus.I2CBus(bus)
 
     def ping(self):
-        for i in range(5):
+        for i in range(self.RETRY_COUNT):
             if self.ping_impl():
                 return True
             time.sleep(0.2)
@@ -51,11 +53,11 @@ class K30:
 
             self.i2cbus.write(self.dev_addr, command)
 
-            time.sleep(0.2)
+            time.sleep(0.15)
 
             value = self.i2cbus.read(self.DEV_ADDR, 3)
 
-            time.sleep(0.2)
+            time.sleep(0.15)
 
             return True
         except:
@@ -66,12 +68,12 @@ class K30:
 
     def get_value(self):
         error = None
-        for i in range(5):
+        for i in range(self.RETRY_COUNT):
             try:
                 return self.get_value_impl()
             except Exception as e:
                 error = e
-                time.sleep(0.2)
+                time.sleep(0.15)
         raise error
 
     def get_value_impl(self):
@@ -80,11 +82,11 @@ class K30:
 
         self.i2cbus.write(self.dev_addr, command)
 
-        time.sleep(0.2)
+        time.sleep(0.15)
 
         value = self.i2cbus.read(self.DEV_ADDR, 4)
 
-        time.sleep(0.2)
+        time.sleep(0.15)
 
         if (list(bytearray(value))[0] & 0x1) != 0x1:
             raise Exception('command incomplete')
