@@ -34,7 +34,7 @@ def send_bit(bit):
 
 def send_bcd(num, count, parity=0):
     for i in range(count):
-        bit = (num >> ((count-1) - i)) & 0x1
+        bit = (int(num) >> ((count-1) - i)) & 0x1
         send_bit(bit)
         parity ^= bit
     return parity
