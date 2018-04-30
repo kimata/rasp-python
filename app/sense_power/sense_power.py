@@ -8,6 +8,7 @@ import os
 import sys
 import time
 import json
+import traceback
 
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'lib'))
 
@@ -19,6 +20,7 @@ import b_route_config
 
 echonet_if = BP35A1('/dev/ttyS0', False)
 
+power = 0
 try:
     energy_meter = EchonetEnergy(
         echonet_if,
@@ -32,6 +34,8 @@ try:
 except:
     echonet_if.reset()
     echonet_if.reset()
+    sys.stderr.write(traceback.format_exc())
+    exit(-1)
 
 # 値があまりに大きい場合は，エラー扱いにする
 if power > 10000:
