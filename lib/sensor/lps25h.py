@@ -62,7 +62,7 @@ class LPS25H:
         except:
             pass
 
-        return dev_id == 0xBD
+        return (dev_id == 0xBD) or (dev_id == 0xBB) # LPS25H or LPS331AP
 
     def enable(self):
         # 25Hz で変換を行い 8 サンプルの平均を取る
