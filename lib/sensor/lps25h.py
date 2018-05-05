@@ -33,6 +33,7 @@ class LPS25H:
     POWER_OFF    	= 0x00
 
     FIFO_ENABLE		= 0x40
+    SW_RESERT		= 0x84
     
     RATE_ONE        	= 0x0 << 4
     RATE_1HZ        	= 0x1 << 4
@@ -70,6 +71,9 @@ class LPS25H:
         self.i2cbus.write(self.dev_addr, [self.REG_FIFO, self.MODE_MEAN])
         self.i2cbus.write(self.dev_addr, [self.REG_CTRL2, self.FIFO_ENABLE])
         self.i2cbus.write(self.dev_addr, [self.REG_CTRL1, self.POWER_ON | self.RATE_25HZ])
+
+    def disable(self):
+        self.i2cbus.write(self.dev_addr, [self.REG_CTRL2, self.SW_RESERT])
         
     def get_value(self):
         self.enable()
@@ -78,6 +82,8 @@ class LPS25H:
         value = self.i2cbus.read(self.DEV_ADDR, 3, self.REG_PRESS)
         press = struct.unpack('<I', value + b'\0')[0] / 4096
 
+        self.disable()
+        
         return [ int(press) ]
 
     def get_value_map(self):

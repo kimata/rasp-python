@@ -20,11 +20,11 @@ import i2cbus
 class TSL2561:
     NAME                = 'TSL2561'
     
-    DEV_ADDR		= 0x39 # 7bit
+    DEV_ADDR		= 0x49 # 7bit
     
     REG_CTRL		= 0x80
     REG_TIMING		= 0x81
-    REG_DATA		= 0x8C
+    REG_DATA		= 0x9B
     REG_ID		= 0x8A
 
     INTEG_13MS      	= 0x00
@@ -63,11 +63,11 @@ class TSL2561:
 
     def wait(self):
         if self.integ == self.INTEG_13MS:
-            time.sleep(0.13 + 0.4)
+            time.sleep(0.13 + 0.1)
         if self.integ == self.INTEG_101MS:
-            time.sleep(0.101 + 0.4)
+            time.sleep(0.101 + 0.1)
         if self.integ == self.INTEG_402MS:
-            time.sleep(0.402 + 0.4)
+            time.sleep(0.402 + 0.1)
 
     def ping(self):
         dev_id = 0
@@ -85,12 +85,14 @@ class TSL2561:
         self.enable()
         self.wait()
 
-        value = self.i2cbus.read(self.dev_addr, 4, self.REG_DATA)
+        value = self.i2cbus.read(self.dev_addr, 5, self.REG_DATA)
 
-        ch0 = float(struct.unpack('<H', bytes(value[0:2]))[0])
-        ch1 = float(struct.unpack('<H', bytes(value[2:4]))[0])
+        temp = struct.unpack('>H', bytes(value[0:2]))[0]
+        
+        ch0 = float(struct.unpack('<H', bytes(value[1:3]))[0])
+        ch1 = float(struct.unpack('<H', bytes(value[3:5]))[0])
 
-        # self.disable()
+        self.disable()
 
         if (self.gain == self.GAIN_1X):
             ch0 *=16
