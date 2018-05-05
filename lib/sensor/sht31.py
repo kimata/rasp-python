@@ -22,7 +22,8 @@ class SHT31:
     DEV_ADDR		= 0x44 # 7bit
     REG_MEASURE		= [0x24, 0x00]
     REG_STATUS		= [0xF3, 0x2D]
-
+    REG_RESET		= [0x30, 0xA2]
+    
     def __init__(self, bus, dev_addr=DEV_ADDR):
         self.bus = bus
         self.dev_addr = dev_addr
@@ -54,6 +55,9 @@ class SHT31:
         return bytearray(value[2:3])[0] == self.crc(value[0:2])
     
     def get_value(self):
+        self.i2cbus.write(self.dev_addr, self.REG_RESET)
+        time.sleep(0.01)
+
         self.i2cbus.write(self.dev_addr, self.REG_MEASURE)
         time.sleep(0.05)
     
@@ -66,9 +70,6 @@ class SHT31:
         temp = -45 + (175 *  struct.unpack('>H', bytes(value[0:2]))[0]) / float(2**16 - 1)
         humi = 100 * struct.unpack('>H', bytes(value[3:5]))[0] / float(2**16 - 1)
 
-        if (int(humi) == 0):
-            raise IOError('Humiditiy is invalid')            
-        
         return [ round(temp, 1), round(humi, 1) ]
 
     def get_value_map(self):
