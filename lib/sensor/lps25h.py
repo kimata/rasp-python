@@ -16,6 +16,7 @@ if __name__ == '__main__':
     sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir))
 
 import i2cbus
+import pprint
 
 class LPS25H:
     NAME                = 'LPS25H'
@@ -34,6 +35,8 @@ class LPS25H:
 
     FIFO_ENABLE		= 0x40
     SW_RESERT		= 0x84
+
+    RESER_AZ            = 0x2
     
     RATE_ONE        	= 0x0 << 4
     RATE_1HZ        	= 0x1 << 4
@@ -68,7 +71,7 @@ class LPS25H:
     def enable(self):
         # 25Hz で変換を行い 8 サンプルの平均を取る
         self.i2cbus.write(self.dev_addr, [self.REG_RES, self.AVE_8])
-        self.i2cbus.write(self.dev_addr, [self.REG_FIFO, self.MODE_MEAN])
+        self.i2cbus.write(self.dev_addr, [self.REG_FIFO, self.MODE_BYPASS])
         self.i2cbus.write(self.dev_addr, [self.REG_CTRL2, self.FIFO_ENABLE])
         self.i2cbus.write(self.dev_addr, [self.REG_CTRL1, self.POWER_ON | self.RATE_25HZ])
 

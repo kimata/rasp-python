@@ -339,7 +339,7 @@ class FPlugDevice:
             minute = dt.minute,
             year = dt.year,
             month = dt.month,
-            day = dt.day - 5
+            day = dt.day
         )
         is_fail = self.read_byte(nthru = 1)
         self.ensure_done()
