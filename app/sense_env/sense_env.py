@@ -16,6 +16,8 @@ import sys
 import time
 import json
 
+json.encoder.FLOAT_REPR = lambda f: ("%.2f" % f)
+
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'lib'))
 
 import sensor.hdc1050
