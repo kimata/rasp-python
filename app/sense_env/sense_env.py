@@ -60,7 +60,9 @@ def scan_sensor(sensor_list):
                     continue
                 if sensor.NAME == 'HDC1050' and val['humi'] == 100:
                     continue
-                
+                if (sensor.NAME == 'LPS22HB' or sensor.NAME == 'LPS25H') and \
+                   (val['press'] < 900 or val['press'] > 1100):
+                    continue
                 value_map.update(val)
                 break
             except:
