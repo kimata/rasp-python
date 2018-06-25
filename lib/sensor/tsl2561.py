@@ -20,7 +20,7 @@ import i2cbus
 class TSL2561:
     NAME                = 'TSL2561'
     
-    DEV_ADDR		= 0x39 # 7bit
+    DEV_ADDR		= 0x49 # 7bit
     
     REG_CTRL		= 0x80
     REG_TIMING		= 0x81
@@ -37,7 +37,7 @@ class TSL2561:
     POWER_ON        	= 0x03
     POWER_OFF    	= 0x00
     
-    gain = GAIN_1X
+    gain = GAIN_16X
     integ = INTEG_402MS
 
     def __init__(self, bus, dev_addr=DEV_ADDR):

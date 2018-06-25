@@ -23,6 +23,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'l
 import sensor.hdc1050
 import sensor.sht31
 import sensor.lps25h
+import sensor.lps22hb
 import sensor.tsl2561
 import sensor.k30
 
@@ -35,6 +36,7 @@ def detect_sensor():
         sensor.hdc1050.HDC1050(I2C_BUS),
         sensor.sht31.SHT31(I2C_BUS),
         sensor.lps25h.LPS25H(I2C_BUS),
+        sensor.lps22hb.LPS22HB(I2C_BUS),
         sensor.tsl2561.TSL2561(I2C_BUS),
         sensor.k30.K30(I2C_BUS),
     ]
@@ -58,7 +60,9 @@ def scan_sensor(sensor_list):
                     continue
                 if sensor.NAME == 'HDC1050' and val['humi'] == 100:
                     continue
-                
+                if (sensor.NAME == 'LPS22HB' or sensor.NAME == 'LPS25H') and \
+                   (val['press'] < 900 or val['press'] > 1100):
+                    continue
                 value_map.update(val)
                 break
             except:
