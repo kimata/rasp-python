@@ -23,7 +23,7 @@ import b_route_config
 logger = logging.getLogger()
 log_handler = logging.handlers.RotatingFileHandler(
     '/tmp/sense_power.log',
-    mode='a', maxBytes=1*1024*1024, backupCount=10, 
+    encoding='utf8', maxBytes=1*1024*1024, backupCount=10,
 )
 log_handler.formatter = logging.Formatter(
     fmt='%(asctime)s %(levelname)s %(name)s :%(message)s',
