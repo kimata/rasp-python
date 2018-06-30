@@ -20,11 +20,16 @@ from meter.echonetenergy import get_pan_info
 
 import b_route_config
 
-logger = logging.getLogger("sense_power")
-log_handler = logging.handlers.TimedRotatingFileHandler(
-    '/tmp/sense_power.log', when='D', interval=1, backupCount=3
+logger = logging.getLogger()
+log_handler = logging.handlers.RotatingFileHandler(
+    '/tmp/sense_power.log',
+    mode='a', maxBytes=1*1024*1024, backupCount=10, 
 )
-log_handler.formatter = logging.Formatter('%(asctime)s %(levelname)s %(name)s :%(message)s')
+log_handler.formatter = logging.Formatter(
+    fmt='%(asctime)s %(levelname)s %(name)s :%(message)s',
+    datefmt='%Y/%m/%d %H:%M:%S %Z'
+)
+log_handler.formatter.converter = time.localtime
 log_handler.level = logging.DEBUG
 
 logger.addHandler(log_handler)
@@ -36,8 +41,7 @@ try:
     energy_meter = EchonetEnergy(
         echonet_if,
         b_route_config.b_id,
-        b_route_config.b_pass,
-        log_handler
+        b_route_config.b_pass
     )
 
     pan_info = get_pan_info(energy_meter)
@@ -45,13 +49,13 @@ try:
     power = energy_meter.get_current_energy()
 except:
     echonet_if.reset()
-    echonet_if.reset()
     logger.error(traceback.format_exc())
     sys.stderr.write(traceback.format_exc())
     exit(-1)
 
 # 値があまりに大きい場合は，エラー扱いにする
 if power > 10000:
+    logger.error('Value is too big: %d' % (power))
     exit(-1)
     
 print(json.dumps({ 'power': power }))

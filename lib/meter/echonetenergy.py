@@ -14,14 +14,16 @@ if __name__ == '__main__':
 from proto.echonetlite import ECHONETLite
    
 class EchonetEnergy:
-    def __init__(self, echonet_if, b_id, b_pass, log_handler=logging.NullHandler(), debug=False):
+    def __init__(self, echonet_if, b_id, b_pass, debug=False):
         echonet_if.set_id(b_id)
         echonet_if.set_password(b_pass)
         
         self.echonet_if = echonet_if
         self.ipv6_addr = None
-        self.logger = logging.getLogger(self.__class__.__name__)
-        self.logger.addHandler(log_handler)
+
+        self.logger = logging.getLogger(__name__)
+        self.logger.addHandler(logging.NullHandler())
+        self.logger.setLevel(logging.DEBUG)
 
     def parse_frame(self, recv_packet):
         self.logger.warn("recv_packet = \n" + pprint.pformat(recv_packet, indent=2))
