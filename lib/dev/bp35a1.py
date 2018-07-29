@@ -14,9 +14,11 @@ class BP35A1:
         )
         self.opt = None
         self.debug = debug
+        self.ser.flushInput()
 
     def reset(self):
         self.__send_command_without_check('SKRESET')
+        self.ser.readline()
 
     def get_option(self):
         ret = self.__send_command('ROPT')

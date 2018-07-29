@@ -3,7 +3,9 @@
 
 import struct
 import pickle
+import pprint
 import os.path
+import logging
 
 if __name__ == '__main__':
     import sys
@@ -18,6 +20,17 @@ class EchonetEnergy:
         
         self.echonet_if = echonet_if
         self.ipv6_addr = None
+
+        self.logger = logging.getLogger(__name__)
+        self.logger.addHandler(logging.NullHandler())
+        self.logger.setLevel(logging.DEBUG)
+
+    def parse_frame(self, recv_packet):
+        self.logger.warn("recv_packet = \n" + pprint.pformat(recv_packet, indent=2))
+        frame = ECHONETLite.parse_frame(recv_packet)
+        self.logger.warn("frame = \n" + pprint.pformat(frame, indent=2))
+        
+        return frame
         
     def get_pan_info(self):
         return self.echonet_if.scan_channel()        
@@ -29,7 +42,7 @@ class EchonetEnergy:
 
         recv_packet = self.echonet_if.recv_udp(self.ipv6_addr)
 
-        frame = ECHONETLite.parse_frame(recv_packet)
+        frame = self.parse_frame(recv_packet)
 
         # インスタンスリスト
         inst_list = ECHONETLite.parse_inst_list(
@@ -66,14 +79,16 @@ class EchonetEnergy:
 
         while True:
             self.echonet_if.send_udp(self.ipv6_addr, ECHONETLite.UDP_PORT, send_packet)
-            recv_packet = self.echonet_if.recv_udp(self.ipv6_addr)
-            frame = ECHONETLite.parse_frame(recv_packet)
+            recv_packet = self.echonet_if.recv_udp(self.ipv6_addr)     
+            frame = self.parse_frame(recv_packet)
             
             if frame['EDATA']['SEOJ'] != meter_eoj:
                 continue
             for prop in frame['EDATA']['prop_list']:
                 if prop['EPC'] != \
                    ECHONETLite.EPC.LOW_VOLTAGE_SMART_METER.INSTANTANEOUS_ENERGY:
+                    continue
+                if len(prop['EDT']) != prop['PDC']:
                     continue
                 return struct.unpack('>I', prop['EDT'])[0]
 

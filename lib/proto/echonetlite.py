@@ -56,11 +56,14 @@ class ECHONETLite:
             CUMULATIVE_ENERGY_FIXED_TIME_NORMAL_DIRECTION 	= 0xEA
             # 定時積算電力量計測値(逆方向計測値)
             CUMULATIVE_ENERGY_FIXED_TIME_REVERSE_DIRECTION	= 0xEB
-   
+
     @classmethod
     def parse_frame(cls, packet, is_binary=True):
         frame = {}
 
+        if (packet is None) or (len(packet) < 10):
+            raise Exception('Invalid Packet: too short')
+        
         # ヘッダ
         frame['EHD1'] = struct.unpack('B', packet[0])[0]
         frame['EHD2'] = struct.unpack('B', packet[1])[0]
@@ -75,10 +78,10 @@ class ECHONETLite:
     @classmethod
     def validate_header(cls, frame):
         if frame['EHD1'] != cls.EHD1:
-            raise Exception('Invalid EHD1: %d' %frame['EHD1'])
+            raise Exception('Invalid EHD1: %d' % frame['EHD1'])
         if (frame['EHD2'] != cls.EHD2.FORMAT1) and \
            (frame['EHD2'] != cls.EHD2.FORMAT2):
-            raise Exception('Invalid EHD2: %d' %frame['EHD2'])
+            raise Exception('Invalid EHD2: %d' % frame['EHD2'])
 
     @classmethod
     def parse_data(cls, packet):
