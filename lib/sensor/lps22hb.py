@@ -58,7 +58,7 @@ class LPS22HB:
     def enable(self):
         # Bypass Mode
         self.i2cbus.write(self.dev_addr, [self.REG_FIFO, self.MODE_BYPASS])
-        # 70Hz で変換を行い 20 サンプルの平均を取る
+        # 50Hz で変換を行い 20 サンプルの平均を取る
         self.i2cbus.write(self.dev_addr, [self.REG_CTRL1, self.RATE_50HZ | self.LPF_20])
 
     def get_value(self):
