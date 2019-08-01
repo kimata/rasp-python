@@ -29,7 +29,7 @@ log_handler.formatter = logging.Formatter(
     fmt='%(asctime)s %(levelname)s %(name)s :%(message)s',
     datefmt='%Y/%m/%d %H:%M:%S %Z'
 )
-log_handler.formatter.converter = time.localtime
+log_handler.formatter.converter = time.gmtime
 log_handler.level = logging.DEBUG
 
 logger.addHandler(log_handler)
@@ -37,6 +37,8 @@ logger.addHandler(log_handler)
 echonet_if = BP35A1('/dev/ttyS0', False)
 
 power = 0
+energy_meter = None
+
 try:
     energy_meter = EchonetEnergy(
         echonet_if,
@@ -47,7 +49,11 @@ try:
     pan_info = get_pan_info(energy_meter)
     energy_meter.connect(pan_info)
     power = energy_meter.get_current_energy()
+    energy_meter.disconnect()
 except:
+    if not energy_meter is None:
+        energy_meter.disconnect()
+    echonet_if.reset()
     echonet_if.reset()
     logger.error(traceback.format_exc())
     sys.stderr.write(traceback.format_exc())
@@ -57,5 +63,6 @@ except:
 if power > 10000:
     logger.error('Value is too big: %d' % (power))
     exit(-1)
-    
+
 print(json.dumps({ 'power': power }))
+exit(0)
