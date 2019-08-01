@@ -4,21 +4,31 @@
 import serial
 import sys
 import pprint
-   
+import logging
+
 class BP35A1:
     def __init__(self, port, debug=False):
         self.ser = serial.Serial(
             port=port,
             baudrate=115200,
-            timeout=1
+            timeout=10
         )
         self.opt = None
         self.debug = debug
         self.ser.flushInput()
 
+        self.logger = logging.getLogger(__name__)
+        self.logger.addHandler(logging.NullHandler())
+        self.logger.setLevel(logging.DEBUG)
+
     def reset(self):
-        self.__send_command_without_check('SKRESET')
+        # Clear buffer
+        self.ser.write("\r\n")
         self.ser.readline()
+
+        self.logger.warn('reset')
+        ret = self.__send_command_without_check('SKRESET')
+        self.logger.warn(ret)
 
     def get_option(self):
         ret = self.__send_command('ROPT')
@@ -75,12 +85,16 @@ class BP35A1:
             line = self.ser.readline()
             # 接続失敗
             if line.startswith('EVENT 24'):
+                self.logger.warn('receive EVENT 24')
                 return None
             # 接続成功
             if line.startswith('EVENT 25'):
                 return ipv6_addr
         # タイムアウト
         return None
+
+    def disconnect(self):
+        self.__send_command_without_check('SKTERM')
 
     def recv_udp(self, ipv6_addr, wait_count=10):
         for i in xrange(wait_count):
@@ -127,7 +141,7 @@ class BP35A1:
         return pan_desc
 
     def __send_command_raw(self, command, echo_back=lambda command: command):
-        self.ser.write(command + "\r")
+        self.ser.write(command + "\r\n")
         # NOTE: echo_back はコマンドからエコーバック文字列を生成する関数．
         # デフォルトはコマンドそのもの．
         self.__expect(echo_back(command))
@@ -137,7 +151,7 @@ class BP35A1:
     def __send_command_without_check(self, command):
         if self.debug:
             sys.stderr.write("SEND: %s\n" % pprint.pformat(command))
-        self.ser.write(command + "\r")
+        self.ser.write(command + "\r\n")
 
         # エコーバックが無い場合はそこで終了
         if self.ser.readline().rstrip() == '':

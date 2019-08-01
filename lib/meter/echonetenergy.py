@@ -54,6 +54,9 @@ class EchonetEnergy:
     
         if not is_meter_exit:
             raise Exception('Meter not fount')
+
+    def disconnect(self):
+        self.echonet_if.disconnect()
         
     def get_current_energy(self):
         meter_eoj = ECHONETLite.build_eoj(
