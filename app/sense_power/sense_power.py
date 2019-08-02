@@ -30,9 +30,9 @@ log_handler.formatter = logging.Formatter(
     datefmt='%Y/%m/%d %H:%M:%S %Z'
 )
 log_handler.formatter.converter = time.gmtime
-log_handler.level = logging.DEBUG
 
 logger.addHandler(log_handler)
+logger.setLevel(level=logging.INFO)
 
 echonet_if = BP35A1('/dev/ttyS0', False)
 
@@ -53,8 +53,11 @@ try:
 except:
     if not energy_meter is None:
         energy_meter.disconnect()
+    time.sleep(5)
     echonet_if.reset()
+    time.sleep(5)
     echonet_if.reset()
+
     logger.error(traceback.format_exc())
     sys.stderr.write(traceback.format_exc())
     exit(-1)
@@ -65,4 +68,6 @@ if power > 10000:
     exit(-1)
 
 print(json.dumps({ 'power': power }))
+logger.info('[SUCCESS] Power: {}'.format(power))
+
 exit(0)
