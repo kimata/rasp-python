@@ -95,6 +95,11 @@ class BP35A1:
 
     def disconnect(self):
         self.__send_command_without_check('SKTERM')
+        try:
+            self.__expect('OK')
+            self.__expect('EVENT 27')
+        except:
+            pass
 
     def recv_udp(self, ipv6_addr, wait_count=10):
         for i in xrange(wait_count):
