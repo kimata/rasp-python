@@ -14,6 +14,8 @@ if __name__ == '__main__':
 from proto.echonetlite import ECHONETLite
    
 class EchonetEnergy:
+    RETRY_COUNT = 5
+    
     def __init__(self, echonet_if, b_id, b_pass, debug=False):
         echonet_if.set_id(b_id)
         echonet_if.set_password(b_pass)
@@ -40,9 +42,13 @@ class EchonetEnergy:
         if self.ipv6_addr == None:
             raise Exception('Faile to connect Wi-SUN')
 
-        recv_packet = self.echonet_if.recv_udp(self.ipv6_addr)
+        for i in range(self.RETRY_COUNT):
+            recv_packet = self.echonet_if.recv_udp(self.ipv6_addr)
 
-        frame = self.parse_frame(recv_packet)
+            frame = self.parse_frame(recv_packet)
+            if ((frame['EDATA']['SEOJ'] == 0x0EF001) and
+                (frame['EDATA']['DEOJ'] == 0x0EF001)):
+                break
 
         # インスタンスリスト
         inst_list = ECHONETLite.parse_inst_list(
@@ -54,7 +60,7 @@ class EchonetEnergy:
     
         if not is_meter_exit:
             raise Exception('Meter not fount')
-
+        
     def disconnect(self):
         self.echonet_if.disconnect()
         
@@ -82,7 +88,7 @@ class EchonetEnergy:
 
         while True:
             self.echonet_if.send_udp(self.ipv6_addr, ECHONETLite.UDP_PORT, send_packet)
-            recv_packet = self.echonet_if.recv_udp(self.ipv6_addr)     
+            recv_packet = self.echonet_if.recv_udp(self.ipv6_addr)
             frame = self.parse_frame(recv_packet)
             
             if frame['EDATA']['SEOJ'] != meter_eoj:

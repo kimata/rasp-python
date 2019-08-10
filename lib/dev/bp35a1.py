@@ -5,8 +5,11 @@ import serial
 import sys
 import pprint
 import logging
+import struct
 
 class BP35A1:
+    WAIT_COUNT = 30
+
     def __init__(self, port, debug=False):
         self.ser = serial.Serial(
             port=port,
@@ -21,10 +24,25 @@ class BP35A1:
         self.logger.addHandler(logging.NullHandler())
         self.logger.setLevel(logging.DEBUG)
 
+
+    def write(self, data):
+        if self.debug:
+            sys.stderr.write("SEND: [%s]\n" % pprint.pformat(data))
+        if type(data) is str:
+            data = data.encode()
+
+        self.ser.write(data)
+
+    def read(self):
+        data = self.ser.readline().decode()
+        if self.debug:
+            sys.stderr.write("RECV: [%s]\n" % pprint.pformat(data))
+        return data
+
     def reset(self):
         # Clear buffer
-        self.ser.write("\r\n")
-        self.ser.readline()
+        self.ser.flushInput()
+        self.ser.flushOutput()
 
         self.logger.warn('reset')
         ret = self.__send_command_without_check('SKRESET')
@@ -52,7 +70,7 @@ class BP35A1:
             self.__send_command(command)
             
             while True:
-                line = self.ser.readline()
+                line = self.read()
                 # スキャン完了
                 if line.startswith('EVENT 22'):
                     break
@@ -81,11 +99,11 @@ class BP35A1:
 
         self.__send_command(command)
 
-        for i in range(0, 30):
-            line = self.ser.readline()
+        for i in range(self.WAIT_COUNT):
+            line = self.read()
             # 接続失敗
             if line.startswith('EVENT 24'):
-                self.logger.warn('receive EVENT 24')
+                self.logger.warn('receive EVENT 24 (connect ERROR)')
                 return None
             # 接続成功
             if line.startswith('EVENT 25'):
@@ -102,8 +120,8 @@ class BP35A1:
             pass
 
     def recv_udp(self, ipv6_addr, wait_count=10):
-        for i in xrange(wait_count):
-            line = self.ser.readline().rstrip()
+        for i in range(wait_count):
+            line = self.read().rstrip()
             if line == '':
                 continue
 
@@ -111,31 +129,31 @@ class BP35A1:
             if line[0] != 'ERXUDP':
                 continue
             if line[1] == ipv6_addr:
-                return line[8]
+                # NOTE: 16進文字列をバイナリに変換 (デフォルト設定の WOPT 01 の前提)
+                return bytes.fromhex(line[8])
         return None
 
     def send_udp(self, ipv6_addr, port, data, handle=1, security=True):
-        command = 'SKSENDTO {0} {1} {2:04X} {3} {4:04X} {5}'.format(
+        command = 'SKSENDTO {0} {1} {2:04X} {3} {4:04X} '.format(
             handle,
             ipv6_addr,
             port,
             1 if security else 2,
-            len(data),
-            data
+            len(data)
         )
         self.__send_command_raw(
-            command,
-            lambda command: ' '.join(command.split(' ', 7)[0:6])
+            command.encode() + data,
+            lambda dummy: command.rstrip()
         )
         status = 0
-        while self.ser.readline().rstrip() != 'OK':
+        while self.read().rstrip() != 'OK':
             None
         
     def __parse_pan_desc(self):
         self.__expect('EPANDESC')
         pan_desc = {}
-        for i in xrange(6):
-            line = self.ser.readline()
+        for i in range(self.WAIT_COUNT):
+            line = self.read()
 
             if not line.startswith('  '):
                 raise Exception("Line does not start with space.\nrst: %s" %
@@ -146,26 +164,25 @@ class BP35A1:
         return pan_desc
 
     def __send_command_raw(self, command, echo_back=lambda command: command):
-        self.ser.write(command + "\r\n")
+        self.write(command)
+        self.write("\r\n")
         # NOTE: echo_back はコマンドからエコーバック文字列を生成する関数．
         # デフォルトはコマンドそのもの．
         self.__expect(echo_back(command))
 
-        return self.ser.readline().rstrip()
+        return self.read().rstrip()
 
     def __send_command_without_check(self, command):
-        if self.debug:
-            sys.stderr.write("SEND: %s\n" % pprint.pformat(command))
-        self.ser.write(command + "\r\n")
+        self.write(command)
+        self.write("\r\n")
 
         # エコーバックが無い場合はそこで終了
-        if self.ser.readline().rstrip() == '':
+        if self.read() is None:
             return
-        self.ser.readline()
+
+        self.read()
     
     def __send_command(self, command):
-        if self.debug:
-            sys.stderr.write("SEND: %s\n" % pprint.pformat(command))
         ret = self.__send_command_raw(command)
         ret = ret.split(' ', 1)
 
@@ -176,7 +193,8 @@ class BP35A1:
         return None if len(ret) == 1 else ret[1]
 
     def __expect(self, text):
-        line = self.ser.readline()
+        line = self.read()
+
         if line.rstrip() != text:
-            raise Exception("Echo back is wrong.\nexp: %s\nrst: %s" %
+            raise Exception("Echo back is wrong.\nexp: [%s]\nrst: [%s]" %
                             (text, line.rstrip()))
