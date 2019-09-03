@@ -42,24 +42,27 @@ class EchonetEnergy:
         if self.ipv6_addr == None:
             raise Exception('Faile to connect Wi-SUN')
 
-        for i in range(self.RETRY_COUNT):
-            recv_packet = self.echonet_if.recv_udp(self.ipv6_addr)
+        # NOTE: インスタンスリスト通知メッセージが来ない場合があるので
+        # チェックを省略
 
-            frame = self.parse_frame(recv_packet)
-            if ((frame['EDATA']['SEOJ'] == 0x0EF001) and
-                (frame['EDATA']['DEOJ'] == 0x0EF001)):
-                break
+        # for i in range(self.RETRY_COUNT):
+        #     recv_packet = self.echonet_if.recv_udp(self.ipv6_addr)
 
-        # インスタンスリスト
-        inst_list = ECHONETLite.parse_inst_list(
-            frame['EDATA']['prop_list'][0]['EDT'])
+        #     frame = self.parse_frame(recv_packet)
+        #     if ((frame['EDATA']['SEOJ'] == 0x0EF001) and
+        #         (frame['EDATA']['DEOJ'] == 0x0EF001)):
+        #         break
 
-        # 低圧スマート電力量メータクラスがあるか確認
-        is_meter_exit = ECHONETLite.check_class(
-            inst_list, 0x02, 0x88)
+        # # インスタンスリスト
+        # inst_list = ECHONETLite.parse_inst_list(
+        #     frame['EDATA']['prop_list'][0]['EDT'])
+
+        # # 低圧スマート電力量メータクラスがあるか確認
+        # is_meter_exit = ECHONETLite.check_class(
+        #     inst_list, 0x02, 0x88)
     
-        if not is_meter_exit:
-            raise Exception('Meter not fount')
+        # if not is_meter_exit:
+        #     raise Exception('Meter not fount')
         
     def disconnect(self):
         self.echonet_if.disconnect()

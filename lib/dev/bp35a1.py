@@ -8,13 +8,14 @@ import logging
 import struct
 
 class BP35A1:
+    RETRY_COUNT = 10
     WAIT_COUNT = 30
 
     def __init__(self, port, debug=False):
         self.ser = serial.Serial(
             port=port,
             baudrate=115200,
-            timeout=10
+            timeout=5
         )
         self.opt = None
         self.debug = debug
@@ -28,6 +29,7 @@ class BP35A1:
     def write(self, data):
         if self.debug:
             sys.stderr.write("SEND: [%s]\n" % pprint.pformat(data))
+        self.logger.warn("SEND: [%s]" % pprint.pformat(data))
         if type(data) is str:
             data = data.encode()
 
@@ -37,6 +39,7 @@ class BP35A1:
         data = self.ser.readline().decode()
         if self.debug:
             sys.stderr.write("RECV: [%s]\n" % pprint.pformat(data))
+        self.logger.warn("RECV: [%s]" % pprint.pformat(data))
         return data
 
     def reset(self):
@@ -45,8 +48,8 @@ class BP35A1:
         self.ser.flushOutput()
 
         self.logger.warn('reset')
-        ret = self.__send_command_without_check('SKRESET')
-        self.logger.warn(ret)
+        self.__send_command_without_check('SKRESET')
+        self.__expect('OK')
 
     def get_option(self):
         ret = self.__send_command('ROPT')
@@ -65,11 +68,11 @@ class BP35A1:
     def scan_channel(self, start_duration=3):
         duration = start_duration
         pan_info = None
-        while True:
+        for i in range(self.RETRY_COUNT):
             command = 'SKSCAN 2 {0:X} {1}'.format((1 << 32) - 1, duration)
             self.__send_command(command)
-            
-            while True:
+
+            for i in range(self.WAIT_COUNT):
                 line = self.read()
                 # スキャン完了
                 if line.startswith('EVENT 22'):
@@ -141,10 +144,7 @@ class BP35A1:
             1 if security else 2,
             len(data)
         )
-        self.__send_command_raw(
-            command.encode() + data,
-            lambda dummy: command.rstrip()
-        )
+        self.__send_command_without_check(command.encode() + data)
         status = 0
         while self.read().rstrip() != 'OK':
             None
@@ -158,8 +158,12 @@ class BP35A1:
             if not line.startswith('  '):
                 raise Exception("Line does not start with space.\nrst: %s" %
                                 line)
+
             line = line.strip().split(':')
             pan_desc[line[0]] = line[1]
+
+            if line[0] == 'PairID':
+                break
 
         return pan_desc
 
@@ -175,11 +179,6 @@ class BP35A1:
     def __send_command_without_check(self, command):
         self.write(command)
         self.write("\r\n")
-
-        # エコーバックが無い場合はそこで終了
-        if self.read() is None:
-            return
-
         self.read()
     
     def __send_command(self, command):
@@ -193,8 +192,13 @@ class BP35A1:
         return None if len(ret) == 1 else ret[1]
 
     def __expect(self, text):
-        line = self.read()
+        line = ''
+        for i in range(self.WAIT_COUNT):
+            line = self.read().rstrip()
 
-        if line.rstrip() != text:
+            if line != '':
+                break
+
+        if line != text:
             raise Exception("Echo back is wrong.\nexp: [%s]\nrst: [%s]" %
                             (text, line.rstrip()))
