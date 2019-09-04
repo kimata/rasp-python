@@ -4,19 +4,52 @@
 import serial
 import sys
 import pprint
-   
+import logging
+import struct
+
 class BP35A1:
+    RETRY_COUNT = 10
+    WAIT_COUNT = 30
+
     def __init__(self, port, debug=False):
         self.ser = serial.Serial(
             port=port,
             baudrate=115200,
-            timeout=1
+            timeout=5
         )
         self.opt = None
         self.debug = debug
+        self.ser.flushInput()
+
+        self.logger = logging.getLogger(__name__)
+        self.logger.addHandler(logging.NullHandler())
+        self.logger.setLevel(logging.DEBUG)
+
+
+    def write(self, data):
+        if self.debug:
+            sys.stderr.write("SEND: [%s]\n" % pprint.pformat(data))
+        self.logger.warn("SEND: [%s]" % pprint.pformat(data))
+        if type(data) is str:
+            data = data.encode()
+
+        self.ser.write(data)
+
+    def read(self):
+        data = self.ser.readline().decode()
+        if self.debug:
+            sys.stderr.write("RECV: [%s]\n" % pprint.pformat(data))
+        self.logger.warn("RECV: [%s]" % pprint.pformat(data))
+        return data
 
     def reset(self):
+        # Clear buffer
+        self.ser.flushInput()
+        self.ser.flushOutput()
+
+        self.logger.warn('reset')
         self.__send_command_without_check('SKRESET')
+        self.__expect('OK')
 
     def get_option(self):
         ret = self.__send_command('ROPT')
@@ -35,12 +68,12 @@ class BP35A1:
     def scan_channel(self, start_duration=3):
         duration = start_duration
         pan_info = None
-        while True:
+        for i in range(self.RETRY_COUNT):
             command = 'SKSCAN 2 {0:X} {1}'.format((1 << 32) - 1, duration)
             self.__send_command(command)
-            
-            while True:
-                line = self.ser.readline()
+
+            for i in range(self.WAIT_COUNT):
+                line = self.read()
                 # スキャン完了
                 if line.startswith('EVENT 22'):
                     break
@@ -69,10 +102,11 @@ class BP35A1:
 
         self.__send_command(command)
 
-        for i in range(0, 30):
-            line = self.ser.readline()
+        for i in range(self.WAIT_COUNT):
+            line = self.read()
             # 接続失敗
             if line.startswith('EVENT 24'):
+                self.logger.warn('receive EVENT 24 (connect ERROR)')
                 return None
             # 接続成功
             if line.startswith('EVENT 25'):
@@ -80,9 +114,17 @@ class BP35A1:
         # タイムアウト
         return None
 
+    def disconnect(self):
+        self.__send_command_without_check('SKTERM')
+        try:
+            self.__expect('OK')
+            self.__expect('EVENT 27')
+        except:
+            pass
+
     def recv_udp(self, ipv6_addr, wait_count=10):
-        for i in xrange(wait_count):
-            line = self.ser.readline().rstrip()
+        for i in range(wait_count):
+            line = self.read().rstrip()
             if line == '':
                 continue
 
@@ -90,61 +132,56 @@ class BP35A1:
             if line[0] != 'ERXUDP':
                 continue
             if line[1] == ipv6_addr:
-                return line[8]
+                # NOTE: 16進文字列をバイナリに変換 (デフォルト設定の WOPT 01 の前提)
+                return bytes.fromhex(line[8])
         return None
 
     def send_udp(self, ipv6_addr, port, data, handle=1, security=True):
-        command = 'SKSENDTO {0} {1} {2:04X} {3} {4:04X} {5}'.format(
+        command = 'SKSENDTO {0} {1} {2:04X} {3} {4:04X} '.format(
             handle,
             ipv6_addr,
             port,
             1 if security else 2,
-            len(data),
-            data
+            len(data)
         )
-        self.__send_command_raw(
-            command,
-            lambda command: ' '.join(command.split(' ', 7)[0:6])
-        )
+        self.__send_command_without_check(command.encode() + data)
         status = 0
-        while self.ser.readline().rstrip() != 'OK':
+        while self.read().rstrip() != 'OK':
             None
         
     def __parse_pan_desc(self):
         self.__expect('EPANDESC')
         pan_desc = {}
-        for i in xrange(6):
-            line = self.ser.readline()
+        for i in range(self.WAIT_COUNT):
+            line = self.read()
 
             if not line.startswith('  '):
                 raise Exception("Line does not start with space.\nrst: %s" %
                                 line)
+
             line = line.strip().split(':')
             pan_desc[line[0]] = line[1]
+
+            if line[0] == 'PairID':
+                break
 
         return pan_desc
 
     def __send_command_raw(self, command, echo_back=lambda command: command):
-        self.ser.write(command + "\r")
+        self.write(command)
+        self.write("\r\n")
         # NOTE: echo_back はコマンドからエコーバック文字列を生成する関数．
         # デフォルトはコマンドそのもの．
         self.__expect(echo_back(command))
 
-        return self.ser.readline().rstrip()
+        return self.read().rstrip()
 
     def __send_command_without_check(self, command):
-        if self.debug:
-            sys.stderr.write("SEND: %s\n" % pprint.pformat(command))
-        self.ser.write(command + "\r")
-
-        # エコーバックが無い場合はそこで終了
-        if self.ser.readline().rstrip() == '':
-            return
-        self.ser.readline()
+        self.write(command)
+        self.write("\r\n")
+        self.read()
     
     def __send_command(self, command):
-        if self.debug:
-            sys.stderr.write("SEND: %s\n" % pprint.pformat(command))
         ret = self.__send_command_raw(command)
         ret = ret.split(' ', 1)
 
@@ -155,7 +192,13 @@ class BP35A1:
         return None if len(ret) == 1 else ret[1]
 
     def __expect(self, text):
-        line = self.ser.readline()
-        if line.rstrip() != text:
-            raise Exception("Echo back is wrong.\nexp: %s\nrst: %s" %
+        line = ''
+        for i in range(self.WAIT_COUNT):
+            line = self.read().rstrip()
+
+            if line != '':
+                break
+
+        if line != text:
+            raise Exception("Echo back is wrong.\nexp: [%s]\nrst: [%s]" %
                             (text, line.rstrip()))

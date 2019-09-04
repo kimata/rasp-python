@@ -3,7 +3,9 @@
 
 import struct
 import pickle
+import pprint
 import os.path
+import logging
 
 if __name__ == '__main__':
     import sys
@@ -12,12 +14,25 @@ if __name__ == '__main__':
 from proto.echonetlite import ECHONETLite
    
 class EchonetEnergy:
+    RETRY_COUNT = 5
+    
     def __init__(self, echonet_if, b_id, b_pass, debug=False):
         echonet_if.set_id(b_id)
         echonet_if.set_password(b_pass)
         
         self.echonet_if = echonet_if
         self.ipv6_addr = None
+
+        self.logger = logging.getLogger(__name__)
+        self.logger.addHandler(logging.NullHandler())
+        self.logger.setLevel(logging.DEBUG)
+
+    def parse_frame(self, recv_packet):
+        self.logger.warn("recv_packet = \n" + pprint.pformat(recv_packet, indent=2))
+        frame = ECHONETLite.parse_frame(recv_packet)
+        self.logger.warn("frame = \n" + pprint.pformat(frame, indent=2))
+        
+        return frame
         
     def get_pan_info(self):
         return self.echonet_if.scan_channel()        
@@ -27,20 +42,30 @@ class EchonetEnergy:
         if self.ipv6_addr == None:
             raise Exception('Faile to connect Wi-SUN')
 
-        recv_packet = self.echonet_if.recv_udp(self.ipv6_addr)
+        # NOTE: インスタンスリスト通知メッセージが来ない場合があるので
+        # チェックを省略
 
-        frame = ECHONETLite.parse_frame(recv_packet)
+        # for i in range(self.RETRY_COUNT):
+        #     recv_packet = self.echonet_if.recv_udp(self.ipv6_addr)
 
-        # インスタンスリスト
-        inst_list = ECHONETLite.parse_inst_list(
-            frame['EDATA']['prop_list'][0]['EDT'])
+        #     frame = self.parse_frame(recv_packet)
+        #     if ((frame['EDATA']['SEOJ'] == 0x0EF001) and
+        #         (frame['EDATA']['DEOJ'] == 0x0EF001)):
+        #         break
 
-        # 低圧スマート電力量メータクラスがあるか確認
-        is_meter_exit = ECHONETLite.check_class(
-            inst_list, 0x02, 0x88)
+        # # インスタンスリスト
+        # inst_list = ECHONETLite.parse_inst_list(
+        #     frame['EDATA']['prop_list'][0]['EDT'])
+
+        # # 低圧スマート電力量メータクラスがあるか確認
+        # is_meter_exit = ECHONETLite.check_class(
+        #     inst_list, 0x02, 0x88)
     
-        if not is_meter_exit:
-            raise Exception('Meter not fount')
+        # if not is_meter_exit:
+        #     raise Exception('Meter not fount')
+        
+    def disconnect(self):
+        self.echonet_if.disconnect()
         
     def get_current_energy(self):
         meter_eoj = ECHONETLite.build_eoj(
@@ -67,13 +92,15 @@ class EchonetEnergy:
         while True:
             self.echonet_if.send_udp(self.ipv6_addr, ECHONETLite.UDP_PORT, send_packet)
             recv_packet = self.echonet_if.recv_udp(self.ipv6_addr)
-            frame = ECHONETLite.parse_frame(recv_packet)
+            frame = self.parse_frame(recv_packet)
             
             if frame['EDATA']['SEOJ'] != meter_eoj:
                 continue
             for prop in frame['EDATA']['prop_list']:
                 if prop['EPC'] != \
                    ECHONETLite.EPC.LOW_VOLTAGE_SMART_METER.INSTANTANEOUS_ENERGY:
+                    continue
+                if len(prop['EDT']) != prop['PDC']:
                     continue
                 return struct.unpack('>I', prop['EDT'])[0]
 

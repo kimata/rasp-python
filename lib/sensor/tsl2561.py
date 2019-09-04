@@ -22,7 +22,7 @@ class TSL2561:
     
     DEV_ADDR		= 0x39 # 7bit
     
-    REG_CTRL		= 0x80
+    REG_CTRL		= 0xC0
     REG_TIMING		= 0x81
     REG_DATA		= 0x9B
     REG_ID		= 0x8A
@@ -63,11 +63,11 @@ class TSL2561:
 
     def wait(self):
         if self.integ == self.INTEG_13MS:
-            time.sleep(0.13 + 0.1)
+            time.sleep(0.13 + 0.2)
         if self.integ == self.INTEG_101MS:
-            time.sleep(0.101 + 0.1)
+            time.sleep(0.101 + 0.2)
         if self.integ == self.INTEG_402MS:
-            time.sleep(0.402 + 0.1)
+            time.sleep(0.402 + 0.2)
 
     def ping(self):
         dev_id = 0
@@ -87,13 +87,11 @@ class TSL2561:
 
         value = self.i2cbus.read(self.dev_addr, 5, self.REG_DATA)
 
-        temp = struct.unpack('>H', bytes(value[0:2]))[0]
-        
         ch0 = float(struct.unpack('<H', bytes(value[1:3]))[0])
         ch1 = float(struct.unpack('<H', bytes(value[3:5]))[0])
 
         self.disable()
-
+        
         if (self.gain == self.GAIN_1X):
             ch0 *=16
             ch1 *=16

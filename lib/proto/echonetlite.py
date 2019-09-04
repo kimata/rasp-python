@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import struct
+import pprint
 
 class ECHONETLite:
     UDP_PORT							= 3610
@@ -56,14 +57,17 @@ class ECHONETLite:
             CUMULATIVE_ENERGY_FIXED_TIME_NORMAL_DIRECTION 	= 0xEA
             # 定時積算電力量計測値(逆方向計測値)
             CUMULATIVE_ENERGY_FIXED_TIME_REVERSE_DIRECTION	= 0xEB
-   
+
     @classmethod
-    def parse_frame(cls, packet, is_binary=True):
+    def parse_frame(cls, packet):
         frame = {}
 
+        if (packet is None) or (len(packet) < 10):
+            raise Exception('Invalid Packet: too short')
+
         # ヘッダ
-        frame['EHD1'] = struct.unpack('B', packet[0])[0]
-        frame['EHD2'] = struct.unpack('B', packet[1])[0]
+        frame['EHD1'] = struct.unpack('B', packet[0:1])[0]
+        frame['EHD2'] = struct.unpack('B', packet[1:2])[0]
         frame['TID'] = struct.unpack('>H', packet[2:4])[0]
         if (frame['EHD2'] == cls.EHD2.FORMAT1):
             frame['EDATA'] = cls.parse_data(packet[4:])
@@ -75,25 +79,25 @@ class ECHONETLite:
     @classmethod
     def validate_header(cls, frame):
         if frame['EHD1'] != cls.EHD1:
-            raise Exception('Invalid EHD1: %d' %frame['EHD1'])
+            raise Exception('Invalid EHD1: %d' % frame['EHD1'])
         if (frame['EHD2'] != cls.EHD2.FORMAT1) and \
            (frame['EHD2'] != cls.EHD2.FORMAT2):
-            raise Exception('Invalid EHD2: %d' %frame['EHD2'])
+            raise Exception('Invalid EHD2: %d' % frame['EHD2'])
 
     @classmethod
     def parse_data(cls, packet):
         data = {}
-        data['SEOJ'] = struct.unpack('>I', chr(0) + packet[0:3])[0]
-        data['DEOJ'] = struct.unpack('>I', chr(0) + packet[3:6])[0]
-        data['ESV'] = struct.unpack('B', packet[6])[0]
-        data['OPC'] = struct.unpack('B', packet[7])[0]
+        data['SEOJ'] = struct.unpack('>I', b'\00' + packet[0:3])[0]
+        data['DEOJ'] = struct.unpack('>I', b'\00' + packet[3:6])[0]
+        data['ESV'] = struct.unpack('B', packet[6:7])[0]
+        data['OPC'] = struct.unpack('B', packet[7:8])[0]
 
         prop_list = []
         packet = packet[8:]
-        for i in xrange(data['OPC']):
+        for i in range(data['OPC']):
             prop = {}
-            prop['EPC'] = struct.unpack('B', packet[0])[0]
-            prop['PDC'] = struct.unpack('B', packet[1])[0]
+            prop['EPC'] = struct.unpack('B', packet[0:1])[0]
+            prop['PDC'] = struct.unpack('B', packet[1:2])[0]
             if prop['PDC'] == 0:
                 prop['EDT'] = None
             else:
@@ -105,15 +109,15 @@ class ECHONETLite:
 
     @classmethod
     def parse_inst_list(cls, packet):
-        count = struct.unpack('B', packet[0])[0]
+        count = struct.unpack('B', packet[0:1])[0]
         packet = packet[1:]
 
         inst_list = []
-        for i in xrange(count):
+        for i in range(count):
             inst_info = {}
-            inst_info['class_group_code'] = struct.unpack('B', packet[0])[0]
-            inst_info['class_code'] = struct.unpack('B', packet[1])[0]
-            inst_info['instance_code'] = struct.unpack('B', packet[2])[0]
+            inst_info['class_group_code'] = struct.unpack('B', packet[0:1])[0]
+            inst_info['class_code'] = struct.unpack('B', packet[1:2])[0]
+            inst_info['instance_code'] = struct.unpack('B', packet[2:3])[0]
             inst_list.append(inst_info)
             packet = packet[3:]
 
