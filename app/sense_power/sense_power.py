@@ -11,6 +11,7 @@ import json
 import traceback
 import logging
 import logging.handlers
+import gzip
 
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'lib'))
 
@@ -18,21 +19,33 @@ from dev.bp35a1 import BP35A1
 from meter.echonetenergy import EchonetEnergy
 from meter.echonetenergy import get_pan_info
 
+class GZipRotator:
+    def __call__(self, source, dest):
+        os.rename(source, dest)
+        f_in = open(dest, 'rb')
+        f_out = gzip.open("%s.gz" % dest, 'wb')
+        f_out.writelines(f_in)
+        f_out.close()
+        f_in.close()
+        os.remove(dest)
+
 import b_route_config
 
 logger = logging.getLogger()
 log_handler = logging.handlers.RotatingFileHandler(
     '/tmp/sense_power.log',
-    encoding='utf8', maxBytes=1*1024*1024, backupCount=10,
+    encoding='utf8', maxBytes=10*1024*1024, backupCount=10,
 )
 log_handler.formatter = logging.Formatter(
     fmt='%(asctime)s %(levelname)s %(name)s :%(message)s',
     datefmt='%Y/%m/%d %H:%M:%S %Z'
 )
 log_handler.formatter.converter = time.gmtime
+log_handler.rotator = GZipRotator()
 
 logger.addHandler(log_handler)
 logger.setLevel(level=logging.INFO)
+
 
 echonet_if = BP35A1('/dev/ttyS0', False)
 
@@ -53,9 +66,9 @@ try:
 except:
     if not energy_meter is None:
         energy_meter.disconnect()
-    time.sleep(5)
+    time.sleep(1)
     echonet_if.reset()
-    time.sleep(5)
+    time.sleep(1)
     echonet_if.reset()
 
     logger.error(traceback.format_exc())
