@@ -27,20 +27,20 @@ RETRY   = 3           # デバイスをスキャンするときのリトライ�
 
 SHT35_DEV_ADDR          = 0x44 # SHT-35 の I2C デバイスアドレス
 INA226_PANEL_DEV_ADDR   = 0x40 # 発電電力計測用 INA226 の I2C デバイスアドレス
-INA226_CHARGE_DEV_ADDR = 0x41 # 充電電力計測用 INA226 の I2C デバイスアドレス
-INA226_BATTERY_DEV_ADDR  = 0x42 # 出力電力計測用 INA226 の I2C デバイスアドレス
+INA226_CHARGE_DEV_ADDR  = 0x41 # 充電電力計測用 INA226 の I2C デバイスアドレス
+INA226_BATTERY_DEV_ADDR = 0x42 # 出力電力計測用 INA226 の I2C デバイスアドレス
 
 def scan_sensor(sensor_list):
     value_map = {}
     for sensor in sensor_list:
         for i in range(RETRY):
-            # try:
+            try:
                 val = sensor.get_value_map()
                 value_map.update(val)
                 break
-            # except:
-            #     pass
-            # time.sleep(0.1)
+            except:
+                pass
+            time.sleep(0.1)
 
     return value_map
 
