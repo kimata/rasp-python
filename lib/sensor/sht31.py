@@ -30,7 +30,7 @@ class SHT31:
         self.i2cbus = i2cbus.I2CBus(bus)
 
     def crc(self, msg):
-        poly=0x31
+        poly = 0x31
         crc = 0xFF
     
         for data in bytearray(msg):
