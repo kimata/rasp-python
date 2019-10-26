@@ -11,8 +11,10 @@
 
 import os
 import sys
+import re
 import time
 import json
+import subprocess
 
 json.encoder.FLOAT_REPR = lambda f: ("%.2f" % f)
 
@@ -52,5 +54,11 @@ value_map = scan_sensor(
         sensor.ina226.INA226(I2C_BUS, INA226_BATTERY_DEV_ADDR, 'battery_'),
     ]
 )
+
+rssi = subprocess.check_output("sudo iwconfig 2>/dev/null | grep 'Signal level' | sed 's/.*Signal level=\\(.*\\) dBm.*/\\1/'", shell=True)
+rssi = rssi.rstrip().decode()
+
+if re.compile('-\d+').search(rssi):
+    value_map['wifi_rssi'] = int(rssi)
 
 print(json.dumps(value_map))
