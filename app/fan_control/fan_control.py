@@ -56,8 +56,3 @@ state = judge_fan_state(temp_out, temp_room)
 fan_ctrl(state)
 
 print('FAN is {}'.format('ON' if state else 'OFF'))
-
-
-
-
-
