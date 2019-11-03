@@ -52,7 +52,6 @@ class SHT35:
 
             return self.crc(data[0:2]) == data[2]
         except:
-            pass
             return False
     
     def get_value(self):

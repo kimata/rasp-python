@@ -42,7 +42,6 @@ class INA226:
             data = self.i2cbus.read_i2c_block_data(self.dev_addr, 0xFF, 2)
             return (data[0] == 0x22) and (data[1] == 0x60)
         except:
-            pass
             return False
     
     def get_value(self):
