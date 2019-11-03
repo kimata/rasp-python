@@ -21,10 +21,11 @@ class INA226:
     NAME                = 'INA226'
     DEV_ADDR		= 0x40 # 7bit
     
-    def __init__(self, bus, dev_addr=DEV_ADDR):
+    def __init__(self, bus, dev_addr=DEV_ADDR, prefix=''):
         self.bus = bus
         self.dev_addr = dev_addr
         self.i2cbus = smbus.SMBus(bus)
+        self.prefix = prefix
         self.is_init = False
 
     def init(self):
@@ -65,7 +66,11 @@ class INA226:
     def get_value_map(self):
         value = self.get_value()
 
-        return { 'voltage': value[0], 'current': value[1], 'power': value[2] }
+        return {
+            (self.prefix + 'voltage'): value[0],
+            (self.prefix + 'current'): value[1],
+            (self.prefix + 'power'): value[2]
+        }
 
 
 if __name__ == '__main__':
