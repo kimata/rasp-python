@@ -43,12 +43,10 @@ def judge_fan_state(temp_out, temp_room):
     if temp_room > 28:
         return True
     elif temp_out is not None:
-        if (temp_room - temp_out) > 2:
+        if (temp_room - temp_out) > 10:
             return True
-        else:
-            return False
-    else:
-        return False
+
+    return False
 
 temp_out = influxdb_get('sensor.esp32', 'ESP32-outdoor', 'temp')
 temp_room = influxdb_get('sensor.raspberrypi', 'rasp-storeroom', 'temp')
