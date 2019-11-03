@@ -55,6 +55,13 @@ value_map = scan_sensor(
     ]
 )
 
+efficiency = 0.0
+if (value_map['panel_power'] > 0):
+    efficiency = 100.0 * value_map['charge_power'] / value_map['panel_power']
+    if efficiency > 100:
+        efficiency = 100.0
+value_map['charge_efficiency'] = efficiency
+
 rssi = subprocess.check_output("sudo iwconfig 2>/dev/null | grep 'Signal level' | sed 's/.*Signal level=\\(.*\\) dBm.*/\\1/'", shell=True)
 rssi = rssi.rstrip().decode()
 
