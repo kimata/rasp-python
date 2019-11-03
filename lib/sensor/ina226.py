@@ -60,7 +60,7 @@ class INA226:
         data = self.i2cbus.read_i2c_block_data(self.dev_addr, 0x03, 2)
         power = (data[0] << 8 | data[1]) * 25 / 1000
 
-        return [ round(volt, 2), round(curr, 2), round(power, 2) ]            
+        return [ round(volt, 3), round(curr, 3), round(power, 3) ]
 
     def get_value_map(self):
         value = self.get_value()
