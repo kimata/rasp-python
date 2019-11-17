@@ -6,16 +6,14 @@
 
 import json
 import urllib.request
-import RPi.GPIO as GPIO
+import subprocess
 
-import pprint
+PWM_KHZ = 25
+PWM_DUTY_ON = 40
+
+GPIO_SW = 15
 
 INFLUXDB_HOST = '192.168.2.20:8086'
-
-GPIO_FAN = 15
-
-GPIO.setmode(GPIO.BCM)
-GPIO.setwarnings(False)
 
 def influxdb_get(db, host, name):
     url = 'http://' + INFLUXDB_HOST + '/query'
@@ -35,8 +33,12 @@ def influxdb_get(db, host, name):
         return None
 
 def fan_ctrl(mode):
-    GPIO.setup(GPIO_FAN, GPIO.OUT)
-    GPIO.output(GPIO_FAN, 1 if mode else 0)
+    subprocess.call("gpio mode 1 pwm", shell=True)
+    subprocess.call("gpio pwm-ms", shell=True)
+    subprocess.call("gpio pwmc {}".format(int(19200 / 100 / PWM_KHZ)), shell=True)
+    subprocess.call("gpio pwmr 100", shell=True)
+    subprocess.call("gpio pwm 1 {}".format(100 - PWM_DUTY_ON), shell=True)
+    subprocess.call("gpio -g write {} {}".format(GPIO_SW, 1 if mode else 0), shell=True)
 
 def judge_fan_state(temp_out, temp_room):
     # 温度に基づいてファンの ON/OFF を決める
