@@ -30,12 +30,14 @@ class INA226:
 
     def init(self):
         # shunt register is 2mohm.
-        self.i2cbus.write_i2c_block_data(self.dev_addr, 0x05, [0xA, 0x00])
+        self.i2cbus.write_i2c_block_data(self.dev_addr, 0x05, [0x0A, 0x00])
         # 128 average, 8.2ms, continuous
-        self.i2cbus.write_i2c_block_data(self.dev_addr, 0x00, [ (0x04 << 9) | (0x07 << 6) | (0x07 << 3) | 0x07])
+        val = (0x04 << 9) | (0x07 << 6) | (0x07 << 3) | 0x07
+        self.i2cbus.write_i2c_block_data(self.dev_addr, 0x00,
+                                         [ (val >> 8) & 0xFF, (val >> 0) & 0xFF ])
         
         self.is_init = True
-        time.sleep(0.01)
+        time.sleep(1.1)
 
     def ping(self):
         try:
