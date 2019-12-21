@@ -14,7 +14,7 @@ import logging.handlers
 import gzip
 
 PWM_KHZ = 25
-PWM_DUTY_ON = 40
+PWM_DUTY_ON = 30
 
 GPIO_SW = 15
 
@@ -53,6 +53,7 @@ def fan_ctrl(mode):
     subprocess.call("gpio pwmc {}".format(int(19200 / 100 / PWM_KHZ)), shell=True)
     subprocess.call("gpio pwmr 100", shell=True)
     subprocess.call("gpio pwm 1 {}".format(100 - PWM_DUTY_ON), shell=True)
+    subprocess.call("gpio -g mode {} out".format(GPIO_SW), shell=True)
     subprocess.call("gpio -g write {} {}".format(GPIO_SW, 1 if mode else 0), shell=True)
 
 def judge_fan_state(temp_out, temp_room):
