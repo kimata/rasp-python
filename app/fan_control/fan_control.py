@@ -89,7 +89,10 @@ logger.setLevel(level=logging.INFO)
 temp_out = influxdb_get('sensor.esp32', 'ESP32-outdoor', 'temp')
 temp_room = influxdb_get('sensor.raspberrypi', 'rasp-storeroom', 'temp')
 
-state = judge_fan_state(temp_out, temp_room)
+if len(sys.argv) == 1:
+    state = judge_fan_state(temp_out, temp_room)
+else:
+    state = sys.argv[1].lower() == 'on'
 
 fan_ctrl(state)
 
