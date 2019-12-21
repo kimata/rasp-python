@@ -58,10 +58,14 @@ def fan_ctrl(mode):
 
 def judge_fan_state(temp_out, temp_room):
     # 温度に基づいてファンの ON/OFF を決める
+
+    if temp_room is None:
+        return False
+
     if temp_room > 28:
         return True
     elif temp_out is not None:
-        if (temp_room - temp_out) > 10:
+        if (temp_room - temp_out) > 5:
             return True
 
     return False
