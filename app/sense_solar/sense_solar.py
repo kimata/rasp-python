@@ -15,6 +15,9 @@ import re
 import time
 import json
 import subprocess
+import logging
+import logging.handlers
+import gzip
 
 json.encoder.FLOAT_REPR = lambda f: ("%.2f" % f)
 
@@ -32,6 +35,16 @@ INA226_PANEL_DEV_ADDR   = 0x40 # 発電電力計測用 INA226 の I2C デバイ�
 INA226_CHARGE_DEV_ADDR  = 0x41 # 充電電力計測用 INA226 の I2C デバイスアドレス
 INA226_BATTERY_DEV_ADDR = 0x42 # 出力電力計測用 INA226 の I2C デバイスアドレス
 
+class GZipRotator:
+    def __call__(self, source, dest):
+        os.rename(source, dest)
+        f_in = open(dest, 'rb')
+        f_out = gzip.open("%s.gz" % dest, 'wb')
+        f_out.writelines(f_in)
+        f_out.close()
+        f_in.close()
+        os.remove(dest)
+
 def scan_sensor(sensor_list):
     value_map = {}
     for sensor in sensor_list:
@@ -46,6 +59,23 @@ def scan_sensor(sensor_list):
 
     return value_map
 
+
+logger = logging.getLogger()
+log_handler = logging.handlers.RotatingFileHandler(
+    '/dev/shm/sense_solar.log',
+    encoding='utf8', maxBytes=1*1024*1024, backupCount=10,
+)
+log_handler.formatter = logging.Formatter(
+    fmt='%(asctime)s %(levelname)s %(name)s :%(message)s',
+    datefmt='%Y/%m/%d %H:%M:%S %Z'
+)
+log_handler.formatter.converter = time.gmtime
+log_handler.rotator = GZipRotator()
+
+logger.addHandler(log_handler)
+logger.setLevel(level=logging.INFO)
+
+
 value_map = scan_sensor(
     [
         sensor.sht35.SHT35(I2C_BUS, SHT35_DEV_ADDR),
@@ -54,6 +84,8 @@ value_map = scan_sensor(
         sensor.ina226.INA226(I2C_BUS, INA226_BATTERY_DEV_ADDR, 'battery_'),
     ]
 )
+
+logger.info(json.dumps(value_map))
 
 efficiency = 0.0
 if (value_map['panel_power'] > 0):
