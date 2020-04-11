@@ -59,6 +59,11 @@ def scan_sensor(sensor_list):
 
     return value_map
 
+def i2c_bus_reset():
+    subprocess.run('sudo gpio -g mode 3 out', shell=True)
+    for i in range(20):
+        subprocess.run('sudo gpio -g write 3 0; sudo gpio -g write 3 1', shell=True)
+    subprocess.run('sudo gpio -g mode 3 alt0', shell=True)
 
 logger = logging.getLogger()
 log_handler = logging.handlers.RotatingFileHandler(
@@ -87,12 +92,16 @@ value_map = scan_sensor(
 
 logger.info(json.dumps(value_map))
 
-efficiency = 0.0
-if (value_map['panel_power'] > 0):
-    efficiency = 100.0 * value_map['charge_power'] / value_map['panel_power']
-    if efficiency > 100:
-        efficiency = 100.0
-value_map['charge_efficiency'] = efficiency
+try:
+    efficiency = 0.0
+    if (value_map['panel_power'] > 0):
+        efficiency = 100.0 * value_map['charge_power'] / value_map['panel_power']
+        if efficiency > 100:
+            efficiency = 100.0
+    value_map['charge_efficiency'] = efficiency
+except:
+    logger.warning('Reset I2C bus')
+    i2c_bus_reset()
 
 rssi = subprocess.check_output("sudo iwconfig 2>/dev/null | grep 'Signal level' | sed 's/.*Signal level=\\(.*\\) dBm.*/\\1/'", shell=True)
 rssi = rssi.rstrip().decode()
