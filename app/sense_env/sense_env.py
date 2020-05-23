@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # 
@@ -42,7 +43,7 @@ def detect_sensor():
     ]
     sensor_list = []
     for dev in candidate_list:
-        for i in xrange(RETRY):
+        for i in range(RETRY):
             if dev.ping():
                 sensor_list.append(dev)
                 break
@@ -53,7 +54,7 @@ def detect_sensor():
 def scan_sensor(sensor_list):
     value_map = {}
     for sensor in sensor_list:
-        for i in xrange(RETRY):
+        for i in range(RETRY):
             try:
                 val = sensor.get_value_map()
                 if sensor.NAME == 'K30' and val['co2'] > CO2_MAX:
