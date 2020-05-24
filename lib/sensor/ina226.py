@@ -51,16 +51,16 @@ class INA226:
             self.init()
 
         data = self.i2cbus.read_i2c_block_data(self.dev_addr, 0x02, 2)
-        volt = (data[0] << 8 | data[1]) * 1.25 / 1000
+        volt = (data[0] << 8 | data[1]) * 1.25 / 1000.0
 
         data = self.i2cbus.read_i2c_block_data(self.dev_addr, 0x04, 2)
         if ((data[0] >> 7) == 1):
             curr = -1 * (0x10000 - (data[0] << 8 | data[1])) / 1000
         else:
-            curr = (data[0] << 8 | data[1]) / 1000
+            curr = (data[0] << 8 | data[1]) / 1000.0
 
         data = self.i2cbus.read_i2c_block_data(self.dev_addr, 0x03, 2)
-        power = (data[0] << 8 | data[1]) * 25 / 1000
+        power = (data[0] << 8 | data[1]) * 25 / 1000.0
 
         return [ round(volt, 3), round(curr, 3), round(power, 3) ]
 
