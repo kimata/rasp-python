@@ -59,6 +59,8 @@ def fan_ctrl(mode):
 def judge_fan_state(temp_out, temp_room):
     # 温度に基づいてファンの ON/OFF を決める
 
+    print('Temperature (out, room) = ({:.1f}, {:.1f})'.format(temp_out, temp_room))
+
     if temp_room is None:
         return False
 
