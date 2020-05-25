@@ -62,7 +62,7 @@ def judge_fan_state(temp_out, temp_room):
     if temp_room is None:
         return False
 
-    if temp_room > 28:
+    if temp_room > 35:
         return True
     elif temp_out is not None:
         if (temp_room - temp_out) > 5:
