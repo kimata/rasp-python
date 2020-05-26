@@ -61,8 +61,10 @@ def scan_sensor(sensor_list):
 
 def i2c_bus_reset():
     subprocess.run('sudo gpio -g mode 3 out', shell=True)
+    time.sleep(0.1)
     for i in range(20):
         subprocess.run('sudo gpio -g write 3 0; sudo gpio -g write 3 1', shell=True)
+    time.sleep(0.1)
     subprocess.run('sudo gpio -g mode 3 alt0', shell=True)
 
 logger = logging.getLogger()
