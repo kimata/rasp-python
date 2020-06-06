@@ -6,7 +6,7 @@
   @type exec
   tag sensor
 
-  command setlock -Xn /tmp/sense_power.lock python3 "/home/pi/rasp-python/app/sense_power/sense_power.py"
+  command setlock -Xn /tmp/sense_power.lock python3 "/home/ubuntu/rasp-python/app/sense_power/sense_power.py"
   format json
   run_interval 10s
 </source>
