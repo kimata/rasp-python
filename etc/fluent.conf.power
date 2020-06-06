@@ -1,26 +1,17 @@
 <system>
-    log_level debug
+    log_level info
  </system>
 
 <source>
   @type exec
   tag sensor
 
-  command setlock -Xn /tmp/sense_power.lock python3 "/home/pi/rasp-python/app/sense_power/sense_power.py"
+  command setlock -Xn /tmp/sense_power.lock python3 "/home/ubuntu/rasp-python/app/sense_power/sense_power.py"
   format json
   run_interval 10s
 </source>
 
-# <source>
-#   @type exec
-#   tag sensor
-
-#   command python3 "/home/pi/rasp-python/app/sense_fplug/sense_fplug.py"
-#   format json
-#   run_interval 20s
-# </source>
-
-<filter sensor.**>
+<filter *.**>
   @type record_transformer
   <record>
     hostname "#{Socket.gethostname}"
@@ -30,13 +21,12 @@
 <match *.**>
   @type forward
   buffer_type memory
-  buffer_chunk_limit 1m
+  buffer_chunk_limit 2m
   buffer_queue_limit 128
-  flush_interval 1s
   retry_limit 1000
-  retry_wait 5s
-  max_retry_wait 2h
-  queued_chunk_flush_interval 1s
+  retry_wait 10s
+  max_retry_wait 30m
+  flush_interval 10s
   <server>
       host "columbia.green-rabbit.net"
   </server>
