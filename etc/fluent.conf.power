@@ -24,7 +24,6 @@
   buffer_chunk_limit 2m
   buffer_queue_limit 128
   retry_limit 1000
-  retry_wait 10s
   max_retry_wait 30m
   flush_interval 10s
   <server>
