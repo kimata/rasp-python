@@ -27,7 +27,7 @@
   retry_wait 10s
   max_retry_wait 2h
   flush_interval 10s
-fl                 <server>
+  <server>
       host "columbia.green-rabbit.net"
   </server>
 </match>
