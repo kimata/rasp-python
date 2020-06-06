@@ -9,6 +9,8 @@ import RPi.GPIO as GPIO
 import datetime
 import time
 
+# 時刻情報を何分毎に送信するか
+INTERVAL  = 3
 # JJY 時刻符号を出力する端子
 GPIP_PORT = 4
 
@@ -140,6 +142,8 @@ GPIO.setmode(GPIO.BCM)
 GPIO.setup(GPIP_PORT, GPIO.OUT)
 set_pin(0)
 
+print('START script...')
+
 while True:
     now = datetime.datetime.now()
     minute = now.minute
@@ -147,6 +151,8 @@ while True:
     usec = now.microsecond
 
     # 0 秒になるまで待つ
-    time.sleep(180 - (sec + usec/1000000.0))
+    wait_time = (60 * INTERVAL) - (sec + usec/1000000.0)
+    time.sleep(wait_time)
 
     send_datetime(now + datetime.timedelta(minutes=1))
+    print('send datetime (wait_time=%1.2fsec).' % (wait_time))
