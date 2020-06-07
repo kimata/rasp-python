@@ -18,7 +18,7 @@
   </record>
 </filter>
 
-<match *.**>
+<match sensor.**>
   @type forward
   buffer_type memory
   buffer_chunk_limit 2m
@@ -30,3 +30,12 @@
       host "columbia.green-rabbit.net"
   </server>
 </match>
+
+<label @FLUENT_LOG>
+  <match fluent.*>
+    @type forward
+    <server>
+      host "columbia.green-rabbit.net"
+    </server>
+  </match>
+</label>
