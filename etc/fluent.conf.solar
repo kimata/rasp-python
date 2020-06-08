@@ -1,0 +1,41 @@
+<system>
+    log_level info
+ </system>
+
+<source>
+  @type exec
+  tag sensor
+
+  command python3 "/home/ubuntu/rasp-python/app/sense_solar/sense_solar.py"
+  format json
+  run_interval 20s
+</source>
+
+<filter *.**>
+  @type record_transformer
+  <record>
+    hostname "#{Socket.gethostname}"
+  </record>
+</filter>
+
+<match sensor.**>
+  @type forward
+  buffer_type memory
+  buffer_chunk_limit 2m
+  buffer_queue_limit 128
+  retry_limit 1000
+  max_retry_wait 30m
+  flush_interval 10s
+  <server>
+      host "columbia.green-rabbit.net"
+  </server>
+</match>
+
+<label @FLUENT_LOG>
+  <match fluent.*>
+    @type forward
+    <server>
+      host "columbia.green-rabbit.net"
+    </server>
+  </match>
+</label>

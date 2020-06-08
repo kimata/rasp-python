@@ -15,7 +15,7 @@ if __name__ == '__main__':
     import sys
     sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir))
 
-import smbus
+import i2cbus
 
 class INA226:
     NAME                = 'INA226'
@@ -24,24 +24,26 @@ class INA226:
     def __init__(self, bus, dev_addr=DEV_ADDR, prefix=''):
         self.bus = bus
         self.dev_addr = dev_addr
-        self.i2cbus = smbus.SMBus(bus)
+        self.i2cbus = i2cbus.I2CBus(bus)
         self.prefix = prefix
         self.is_init = False
 
     def init(self):
         # shunt register is 2mohm.
-        self.i2cbus.write_i2c_block_data(self.dev_addr, 0x05, [0x0A, 0x00])
+        self.i2cbus.write(self.dev_addr, [0x05, 0x0A, 0x00])
+
         # 128 average, 8.2ms, continuous
         val = (0x04 << 9) | (0x07 << 6) | (0x07 << 3) | 0x07
-        self.i2cbus.write_i2c_block_data(self.dev_addr, 0x00,
-                                         [ (val >> 8) & 0xFF, (val >> 0) & 0xFF ])
+        self.i2cbus.write(self.dev_addr, [0x00, (val >> 8) & 0xFF, (val >> 0) & 0xFF])
         
         self.is_init = True
         time.sleep(1.1)
 
     def ping(self):
         try:
-            data = self.i2cbus.read_i2c_block_data(self.dev_addr, 0xFF, 2)
+            self.i2cbus.write(self.dev_addr, [0xFF])
+            data = self.i2cbus.read(self.DEV_ADDR, 2)
+
             return (data[0] == 0x22) and (data[1] == 0x60)
         except:
             return False
@@ -50,16 +52,19 @@ class INA226:
         if not self.is_init:
             self.init()
 
-        data = self.i2cbus.read_i2c_block_data(self.dev_addr, 0x02, 2)
+        self.i2cbus.write(self.dev_addr, [0x02])
+        data = self.i2cbus.read(self.DEV_ADDR, 2)
         volt = (data[0] << 8 | data[1]) * 1.25 / 1000.0
 
-        data = self.i2cbus.read_i2c_block_data(self.dev_addr, 0x04, 2)
+        self.i2cbus.write(self.dev_addr, [0x04])
+        data = self.i2cbus.read(self.DEV_ADDR, 2)
         if ((data[0] >> 7) == 1):
             curr = -1 * (0x10000 - (data[0] << 8 | data[1])) / 1000
         else:
             curr = (data[0] << 8 | data[1]) / 1000.0
 
-        data = self.i2cbus.read_i2c_block_data(self.dev_addr, 0x03, 2)
+        self.i2cbus.write(self.dev_addr, [0x03])
+        data = self.i2cbus.read(self.DEV_ADDR, 2)
         power = (data[0] << 8 | data[1]) * 25 / 1000.0
 
         return [ round(volt, 3), round(curr, 3), round(power, 3) ]
