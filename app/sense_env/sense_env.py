@@ -15,6 +15,8 @@ import os
 import sys
 import time
 import json
+import subprocess
+import re
 
 json.encoder.FLOAT_REPR = lambda f: ("%.2f" % f)
 
@@ -73,5 +75,11 @@ def scan_sensor(sensor_list):
 
 sensor_list = detect_sensor()
 value_map = scan_sensor(sensor_list)
+
+rssi = subprocess.check_output("sudo iwconfig 2>/dev/null | grep 'Signal level' | sed 's/.*Signal level=\\(.*\\) dBm.*/\\1/'", shell=True)
+rssi = rssi.rstrip().decode()
+
+if re.compile('-\d+').search(rssi):
+    value_map['wifi_rssi'] = int(rssi)
 
 print(json.dumps(value_map))
