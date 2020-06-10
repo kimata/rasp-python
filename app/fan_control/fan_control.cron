@@ -1,0 +1,3 @@
+SHELL=/bin/sh
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+*/5 * * * *   root    python3 /home/ubuntu/rasp-python/app/fan_control/fan_control.py > /dev/null
