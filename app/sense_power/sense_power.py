@@ -12,6 +12,8 @@ import traceback
 import logging
 import logging.handlers
 import gzip
+import subprocess
+import re
 
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'lib'))
 
@@ -80,7 +82,15 @@ if power > 10000:
     logger.error('Value is too big: %d' % (power))
     exit(-1)
 
-print(json.dumps({ 'power': power }))
+value_map = { 'power': power }
+
+rssi = subprocess.check_output("sudo iwconfig 2>/dev/null | grep 'Signal level' | sed 's/.*Signal level=\\(.*\\) dBm.*/\\1/'", shell=True)
+rssi = rssi.rstrip().decode()
+
+if re.compile('-\d+').search(rssi):
+    value_map['wifi_rssi'] = int(rssi)
+
+print(json.dumps(value_map))
 logger.info('[SUCCESS] Power: {}'.format(power))
 
 exit(0)
