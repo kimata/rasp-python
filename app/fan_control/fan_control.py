@@ -48,13 +48,13 @@ def influxdb_get(db, host, name):
         return None
 
 def fan_ctrl(mode):
-    subprocess.call("gpio mode 1 pwm", shell=True)
-    subprocess.call("gpio pwm-ms", shell=True)
-    subprocess.call("gpio pwmc {}".format(int(19200 / 100 / PWM_KHZ)), shell=True)
-    subprocess.call("gpio pwmr 100", shell=True)
-    subprocess.call("gpio pwm 1 {}".format(100 - PWM_DUTY_ON), shell=True)
-    subprocess.call("gpio -g mode {} out".format(GPIO_SW), shell=True)
-    subprocess.call("gpio -g write {} {}".format(GPIO_SW, 1 if mode else 0), shell=True)
+    subprocess.call('sudo gpio mode 1 pwm', shell=True)
+    subprocess.call('sudo gpio pwm-ms', shell=True)
+    subprocess.call('sudo gpio pwmc {}'.format(int(19200 / 100 / PWM_KHZ)), shell=True)
+    subprocess.call('sudo gpio pwmr 100', shell=True)
+    subprocess.call('sudo gpio pwm 1 {}'.format(100 - PWM_DUTY_ON), shell=True)
+    subprocess.call('sudo gpio -g mode {} out'.format(GPIO_SW), shell=True)
+    subprocess.call('sudo gpio -g write {} {}'.format(GPIO_SW, 1 if mode else 0), shell=True)
 
 def judge_fan_state(temp_out, temp_room):
     # 温度に基づいてファンの ON/OFF を決める
