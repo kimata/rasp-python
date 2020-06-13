@@ -27,6 +27,7 @@ import sensor.sht31
 import sensor.lps25h
 import sensor.lps22hb
 import sensor.tsl2561
+import sensor.ccs811
 import sensor.k30
 
 I2C_BUS = 0x1 	# I2C のバス番号 (Raspberry Pi は 0x1)
@@ -40,6 +41,7 @@ def detect_sensor():
         sensor.lps25h.LPS25H(I2C_BUS),
         sensor.lps22hb.LPS22HB(I2C_BUS),
         sensor.tsl2561.TSL2561(I2C_BUS),
+        sensor.ccs811.CCS811(I2C_BUS),
         sensor.k30.K30(I2C_BUS),
     ]
     sensor_list = []
