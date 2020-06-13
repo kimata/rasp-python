@@ -44,12 +44,21 @@ class TSL2561:
         self.bus = bus
         self.dev_addr = dev_addr
         self.i2cbus = i2cbus.I2CBus(bus)
-    
+        self.is_init = False
+
+    def init(self):
+        data = self.i2cbus.read(self.DEV_ADDR, 1, 0x90)
+        data = int.from_bytes(data, byteorder='big')
+
+        if (data & 0x0F) != 0x03:
+            self.set_timing()
+            self.enable()
+            self.wait()
+
+        self.is_init = True
+
     def enable(self):
         self.i2cbus.write(self.dev_addr, [self.REG_CTRL, self.POWER_ON])
-
-    def disable(self):
-        self.i2cbus.write(self.dev_addr, [self.REG_CTRL, self.POWER_OFF])
 
     def set_timing(self):
         value = self.gain | self.integ
@@ -81,17 +90,14 @@ class TSL2561:
         return (dev_id >> 4) == 0x1
     
     def get_value(self):
-        self.set_timing()
-        self.enable()
-        self.wait()
+        if not self.is_init:
+            self.init()
 
         value = self.i2cbus.read(self.dev_addr, 5, self.REG_DATA)
 
         ch0 = int.from_bytes(value[1:3], byteorder='little')
         ch1 = int.from_bytes(value[3:5], byteorder='little')
 
-        self.disable()
-        
         if (self.gain == self.GAIN_1X):
             ch0 *=16
             ch1 *=16
