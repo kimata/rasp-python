@@ -22,10 +22,10 @@ class TSL2561:
     
     DEV_ADDR		= 0x39 # 7bit
     
-    REG_CTRL		= 0xC0
-    REG_TIMING		= 0x81
-    REG_DATA		= 0x9B
-    REG_ID		= 0x8A
+    REG_CTRL		= 0xE0
+    REG_TIMING		= 0xA1
+    REG_DATA		= 0xAB
+    REG_ID		= 0xAA
 
     INTEG_13MS      	= 0x00
     INTEG_101MS     	= 0x01
