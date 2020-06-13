@@ -74,7 +74,7 @@ class TSL2561:
 
         try:
             value = self.i2cbus.read(self.DEV_ADDR, 1, self.REG_ID)
-            dev_id = struct.unpack('B', value)[0]
+            dev_id = int.from_bytes(value, byteorder='little')
         except:
             pass
 
@@ -87,8 +87,8 @@ class TSL2561:
 
         value = self.i2cbus.read(self.dev_addr, 5, self.REG_DATA)
 
-        ch0 = float(struct.unpack('<H', bytes(value[1:3]))[0])
-        ch1 = float(struct.unpack('<H', bytes(value[3:5]))[0])
+        ch0 = int.from_bytes(value[1:3], byteorder='little')
+        ch1 = int.from_bytes(value[3:5], byteorder='little')
 
         self.disable()
         
