@@ -21,8 +21,8 @@ class TSL2561:
     NAME                = 'TSL2561'
     
     DEV_ADDR		= 0x39 # 7bit
-    
-    REG_CTRL		= 0xC0
+
+    REG_CTRL		= 0x80
     REG_TIMING		= 0x81
     REG_DATA0		= 0xAC
     REG_DATA1		= 0xAE
