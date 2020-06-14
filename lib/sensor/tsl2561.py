@@ -53,6 +53,7 @@ class TSL2561:
 
         if data != (self.gain | self.integ):
             self.set_timing()
+            self.disable()
 
         self.is_init = True
 
