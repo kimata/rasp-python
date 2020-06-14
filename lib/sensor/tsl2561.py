@@ -24,7 +24,7 @@ class TSL2561:
     
     REG_CTRL		= 0xE0
     REG_TIMING		= 0xA1
-    REG_DATA		= 0xAB
+    REG_DATA		= 0xAC
     REG_ID		= 0xAA
 
     INTEG_13MS      	= 0x00
@@ -93,10 +93,10 @@ class TSL2561:
         if not self.is_init:
             self.init()
 
-        value = self.i2cbus.read(self.dev_addr, 5, self.REG_DATA)
+        value = self.i2cbus.read(self.dev_addr, 4, self.REG_DATA)
 
-        ch0 = int.from_bytes(value[1:3], byteorder='little')
-        ch1 = int.from_bytes(value[3:5], byteorder='little')
+        ch0 = int.from_bytes(value[0:2], byteorder='little')
+        ch1 = int.from_bytes(value[2:4], byteorder='little')
 
         if (self.gain == self.GAIN_1X):
             ch0 *=16
