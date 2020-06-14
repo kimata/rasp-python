@@ -48,18 +48,19 @@ class TSL2561:
         self.is_init = False
 
     def init(self):
-        data = self.i2cbus.read(self.DEV_ADDR, 1, 0x90)
+        data = self.i2cbus.read(self.DEV_ADDR, 1, self.REG_TIMING)
         data = int.from_bytes(data, byteorder='big')
 
-        if (data & 0x0F) != 0x03:
+        if data != (self.gain | self.integ):
             self.set_timing()
-            self.enable()
-            self.wait()
 
         self.is_init = True
 
     def enable(self):
         self.i2cbus.write(self.dev_addr, [self.REG_CTRL, self.POWER_ON])
+
+    def disable(self):
+        self.i2cbus.write(self.dev_addr, [self.REG_CTRL, self.POWER_OFF])
 
     def set_timing(self):
         value = self.gain | self.integ
@@ -73,11 +74,11 @@ class TSL2561:
 
     def wait(self):
         if self.integ == self.INTEG_13MS:
-            time.sleep(0.13 + 0.2)
+            time.sleep(0.13 + 0.1)
         if self.integ == self.INTEG_101MS:
-            time.sleep(0.101 + 0.2)
+            time.sleep(0.101 + 0.1)
         if self.integ == self.INTEG_402MS:
-            time.sleep(0.402 + 0.2)
+            time.sleep(0.402 + 0.1)
 
     def ping(self):
         dev_id = 0
@@ -94,8 +95,13 @@ class TSL2561:
         if not self.is_init:
             self.init()
 
+        self.enable()
+        self.wait()
+
         value0 = self.i2cbus.read(self.dev_addr, 2, self.REG_DATA0)
         value1 = self.i2cbus.read(self.dev_addr, 2, self.REG_DATA1)
+
+        self.disable()
 
         ch0 = int.from_bytes(value0, byteorder='little')
         ch1 = int.from_bytes(value1, byteorder='little')
