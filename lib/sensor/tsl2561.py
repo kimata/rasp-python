@@ -19,7 +19,7 @@ import i2cbus
 
 class TSL2561:
     NAME                = 'TSL2561'
-    
+
     DEV_ADDR		= 0x39 # 7bit
 
     REG_CTRL		= 0x80
@@ -31,13 +31,13 @@ class TSL2561:
     INTEG_13MS      	= 0x00
     INTEG_101MS     	= 0x01
     INTEG_402MS     	= 0x02
-    
+
     GAIN_1X         	= 0x00
     GAIN_16X        	= 0x10
 
     POWER_ON        	= 0x03
     POWER_OFF    	= 0x00
-    
+
     gain = GAIN_1X
     integ = INTEG_402MS
 
