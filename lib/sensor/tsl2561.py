@@ -39,7 +39,7 @@ class TSL2561:
     POWER_OFF    	= 0x00
 
     gain = GAIN_1X
-    integ = INTEG_402MS
+    integ = INTEG_101MS
 
     def __init__(self, bus, dev_addr=DEV_ADDR):
         self.bus = bus
