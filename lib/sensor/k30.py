@@ -88,14 +88,13 @@ class K30:
 
         time.sleep(0.15)
 
-        if (list(bytearray(value))[0] & 0x1) != 0x1:
+        if (value[0] & 0x1) != 0x1:
             raise Exception('command incomplete')
-        
-        if list(bytearray(value)) != \
-           self.__compose_command(list(bytearray(value))[0:3]):
+        if value[3] != self.__compose_command(list((value[0:3])))[3]:
             raise Exception('invalid sum')
 
-        co2 = struct.unpack('>H', bytes(value[1:3]))[0]
+        co2 = int.from_bytes(value[1:3], byteorder='big')
+
         return [ co2 ]
 
     def get_value_map(self):
