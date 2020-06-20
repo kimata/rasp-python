@@ -30,19 +30,21 @@ import sensor.tsl2561
 import sensor.ccs811
 import sensor.k30
 
-I2C_BUS = 0x1 	# I2C のバス番号 (Raspberry Pi は 0x1)
-RETRY   = 3   	# デバイスをスキャンするときのリトライ回数
-CO2_MAX = 5000 # CO2 濃度の最大値 (時々異常値を返すのでその対策)
+I2C_ARM_BUS = 0x1       # Raspberry Pi のデフォルトの I2C バス番号
+I2C_VC_BUS  = 0x0       # dtparam=i2c_vc=on で有効化される I2C のバス番号
+RETRY       = 3         # デバイスをスキャンするときのリトライ回数
+CO2_MAX     = 5000      # CO2 濃度の最大値 (時々異常値を返すのでその対策)
 
 def detect_sensor():
     candidate_list = [
-        sensor.hdc1050.HDC1050(I2C_BUS),
-        sensor.sht31.SHT31(I2C_BUS),
-        sensor.lps25h.LPS25H(I2C_BUS),
-        sensor.lps22hb.LPS22HB(I2C_BUS),
-        sensor.tsl2561.TSL2561(I2C_BUS),
-        sensor.ccs811.CCS811(I2C_BUS),
-        sensor.k30.K30(I2C_BUS),
+        sensor.hdc1050.HDC1050(I2C_ARM_BUS),
+        sensor.sht31.SHT31(I2C_ARM_BUS),
+        sensor.lps25h.LPS25H(I2C_ARM_BUS),
+        sensor.lps22hb.LPS22HB(I2C_ARM_BUS),
+        sensor.tsl2561.TSL2561(I2C_ARM_BUS),
+        sensor.ccs811.CCS811(I2C_ARM_BUS),
+        sensor.k30.K30(I2C_ARM_BUS),
+        sensor.k30.K30(I2C_VC_BUS),
     ]
     sensor_list = []
     for dev in candidate_list:
