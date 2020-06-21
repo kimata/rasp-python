@@ -45,14 +45,14 @@ class SHT31:
         return crc
             
     def ping(self):
-        value = '   '
+        value = b'   '
         try:
             self.i2cbus.write(self.dev_addr, self.REG_STATUS)
             value = self.i2cbus.read(self.DEV_ADDR, 3)
         except:
             pass
 
-        return bytearray(value[2:3])[0] == self.crc(value[0:2])
+        return value[2] == self.crc(value[0:2])
     
     def get_value(self):
         self.i2cbus.write(self.dev_addr, self.REG_RESET)
