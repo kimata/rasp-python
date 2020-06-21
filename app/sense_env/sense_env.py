@@ -24,6 +24,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'l
 
 import sensor.hdc1050
 import sensor.sht31
+import sensor.sht21
 import sensor.lps25h
 import sensor.lps22hb
 import sensor.tsl2561
@@ -39,6 +40,7 @@ def detect_sensor():
     candidate_list = [
         sensor.hdc1050.HDC1050(I2C_ARM_BUS),
         sensor.sht31.SHT31(I2C_ARM_BUS),
+        sensor.sht21.SHT21(I2C_ARM_BUS),
         sensor.lps25h.LPS25H(I2C_ARM_BUS),
         sensor.lps22hb.LPS22HB(I2C_ARM_BUS),
         sensor.tsl2561.TSL2561(I2C_ARM_BUS),
