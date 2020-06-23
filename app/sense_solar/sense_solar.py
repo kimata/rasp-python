@@ -100,7 +100,7 @@ try:
         efficiency = 100.0 * value_map['charge_power'] / value_map['panel_power']
         if efficiency > 100:
             efficiency = 100.0
-    value_map['charge_efficiency'] = efficiency
+    value_map['charge_efficiency'] = round(efficiency, 2)
 except:
     logger.warning('Reset I2C bus')
     i2c_bus_reset()
