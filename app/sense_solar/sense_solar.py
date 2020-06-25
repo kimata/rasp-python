@@ -18,6 +18,7 @@ import subprocess
 import logging
 import logging.handlers
 import gzip
+import traceback
 
 json.encoder.FLOAT_REPR = lambda f: ("%.2f" % f)
 
@@ -101,7 +102,8 @@ try:
         if efficiency > 100:
             efficiency = 100.0
     value_map['charge_efficiency'] = round(efficiency, 2)
-except:
+except Exception as e:
+    logger.warning(traceback.format_exc())
     logger.warning('Reset I2C bus')
     i2c_bus_reset()
 
