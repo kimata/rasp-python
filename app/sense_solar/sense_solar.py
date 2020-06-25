@@ -77,7 +77,7 @@ log_handler.formatter = logging.Formatter(
     fmt='%(asctime)s %(levelname)s %(name)s :%(message)s',
     datefmt='%Y/%m/%d %H:%M:%S %Z'
 )
-log_handler.formatter.converter = time.gmtime
+log_handler.formatter.converter = time.localtime
 log_handler.rotator = GZipRotator()
 
 logger.addHandler(log_handler)
