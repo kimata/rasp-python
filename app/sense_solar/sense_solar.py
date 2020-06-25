@@ -20,6 +20,9 @@ import logging.handlers
 import gzip
 import traceback
 
+import RPi.GPIO as GPIO
+GPIO.setmode(GPIO.BCM)
+
 json.encoder.FLOAT_REPR = lambda f: ("%.2f" % f)
 
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'lib'))
@@ -61,11 +64,18 @@ def scan_sensor(sensor_list):
     return value_map
 
 def i2c_bus_reset():
-    subprocess.run('sudo gpio -g mode 3 out', shell=True)
-    time.sleep(0.1)
-    for i in range(20):
-        subprocess.run('sudo gpio -g write 3 0; sudo gpio -g write 3 1', shell=True)
-    time.sleep(0.1)
+    GPIO.setup(2, GPIO.IN)
+    GPIO.setup(3, GPIO.OUT)
+    if GPIO.input(2) == GPIO.LOW:
+        for i in range(20):
+            GPIO.output(3, GPIO.LOW)
+            time.sleep(0.001)
+            GPIO.output(3, GPIO.HIGH)
+            time.sleep(0.001)
+
+            if (GPIO.input(2) == GPIO.HIGH):
+                break
+    subprocess.run('sudo gpio -g mode 2 alt0', shell=True)
     subprocess.run('sudo gpio -g mode 3 alt0', shell=True)
 
 logger = logging.getLogger()
