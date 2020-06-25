@@ -64,9 +64,11 @@ def scan_sensor(sensor_list):
     return value_map
 
 def i2c_bus_reset():
+    logger.warning('Reset I2C bus')
     GPIO.setup(2, GPIO.IN)
     GPIO.setup(3, GPIO.OUT)
     if GPIO.input(2) == GPIO.LOW:
+        logger.warning('increment SCL')
         for i in range(20):
             GPIO.output(3, GPIO.LOW)
             time.sleep(0.001)
@@ -114,7 +116,6 @@ try:
     value_map['charge_efficiency'] = round(efficiency, 2)
 except Exception as e:
     logger.warning(traceback.format_exc())
-    logger.warning('Reset I2C bus')
     i2c_bus_reset()
 
 rssi = subprocess.check_output("sudo iwconfig 2>/dev/null | grep 'Signal level' | sed 's/.*Signal level=\\(.*\\) dBm.*/\\1/'", shell=True)
