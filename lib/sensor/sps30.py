@@ -16,7 +16,6 @@ if __name__ == '__main__':
     sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir))
 
 import i2cbus
-import pprint
 
 class SPS30:
     NAME                = 'SPS30'
@@ -116,7 +115,7 @@ class SPS30:
             'typ_size'
         ]
 
-        return { label[i]: value[i] for i in range(10) }
+        return { label[i]: round(value[i], 2) for i in range(10) }
 
 
 if __name__ == '__main__':
