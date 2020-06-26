@@ -45,14 +45,14 @@ class SHT31:
         return crc
             
     def ping(self):
-        value = b'   '
+        data = b'   '
         try:
             self.i2cbus.write(self.dev_addr, self.REG_STATUS)
-            value = self.i2cbus.read(self.DEV_ADDR, 3)
+            data = self.i2cbus.read(self.DEV_ADDR, 3)
         except:
             pass
 
-        return value[2] == self.crc(value[0:2])
+        return data[2] == self.crc(data[0:2])
     
     def get_value(self):
         self.i2cbus.write(self.dev_addr, self.REG_RESET)
@@ -60,22 +60,21 @@ class SHT31:
 
         self.i2cbus.write(self.dev_addr, self.REG_MEASURE)
         time.sleep(0.05)
-    
-        value = self.i2cbus.read(self.DEV_ADDR, 6)
 
-        if (bytearray(value[2:3])[0] != self.crc(value[0:2])) or \
-           (bytearray(value[5:6])[0] != self.crc(value[3:5])):
-            raise IOError('CRC unmatch')
-        
-        temp = -45 + (175 *  struct.unpack('>H', bytes(value[0:2]))[0]) / float(2**16 - 1)
-        humi = 100 * struct.unpack('>H', bytes(value[3:5]))[0] / float(2**16 - 1)
-        
+        data = self.i2cbus.read(self.DEV_ADDR, 6)
+
+        if (self.crc(data[0:2]) != data[2]) or (self.crc(data[3:5]) != data[5]):
+            raise IOError("ERROR: CRC unmatch.")
+
+        temp = -45 + (175 *  int.from_bytes(data[0:2], byteorder='big')) / float(2**16 - 1)
+        humi = 100 * int.from_bytes(data[3:5], byteorder='big') / float(2**16 - 1)
+
         return [ round(temp, 4), round(humi, 1) ]
 
     def get_value_map(self):
-        value = self.get_value()
+        data = self.get_value()
 
-        return { 'temp': value[0], 'humi': value[1] }
+        return { 'temp': data[0], 'humi': data[1] }
 
 
 if __name__ == '__main__':
