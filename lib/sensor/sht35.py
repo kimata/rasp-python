@@ -64,8 +64,9 @@ class SHT35:
 
         if (self.crc(data[0:2]) != data[2]) or (self.crc(data[3:5]) != data[5]):
             raise IOError("ERROR: CRC unmatch.")
-        temp = -45 + 175.0 * ((data[0] << 8) | data[1]) / (pow(2, 16) - 1)
-        humi = 100.0 * ((data[3] << 8) | data[4]) / (pow(2, 16) - 1)
+
+        temp = -45 + (175 *  int.from_bytes(data[0:2], byteorder='big')) / float(2**16 - 1)
+        humi = 100 * int.from_bytes(data[3:5], byteorder='big') / float(2**16 - 1)
 
         return [ round(temp, 2), round(humi, 2) ]
 
