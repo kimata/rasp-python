@@ -65,6 +65,13 @@ def scan_sensor(sensor_list):
 
 def i2c_bus_reset():
     logger.warning('Reset I2C bus')
+
+    # NOTE: 状況を記録しておく
+    logger.warning('sudo gpio readall')
+    logger.warning(subprocess.check_output('sudo gpio readall', shell=True).decode())
+    logger.warning('sudo i2cdetect -y 1')
+    logger.warning(subprocess.check_output('sudo i2cdetect -y 1', shell=True).decode())
+
     GPIO.setup(2, GPIO.IN)
     GPIO.setup(3, GPIO.OUT)
     if GPIO.input(2) == GPIO.LOW:
