@@ -9,11 +9,13 @@ import json
 import logging
 import logging.handlers
 import gzip
+import warnings
 
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'lib'))
 
 from pyfplug import *
 from fplug_list import *
+from bt_rssi import *
 
 class GZipRotator:
     def namer(name):
@@ -55,6 +57,11 @@ for i, dev in enumerate(DEVICE_LIST):
         if not os.path.exists(dev_file):
             subprocess.call('sudo rfcomm bind {0} {1}'.format(i, dev['addr']), shell=True)
 
+        btrssi = BluetoothRSSI(dev['addr'])
+        rssi = -100
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore', DeprecationWarning)
+            rssi = btrssi.request_rssi()[0]
         fplug = FPlugDevice(dev_file, comm_wait=0.2)
 
         result = json.dumps({
@@ -62,6 +69,7 @@ for i, dev in enumerate(DEVICE_LIST):
             'power': fplug.get_power_realtime(),
             'temp': fplug.get_temperature(),
             'humi': fplug.get_humidity(),
+            'rssi': rssi,
             'self_time': 0,
         }, ensure_ascii=False)
 
