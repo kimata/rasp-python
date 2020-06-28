@@ -57,13 +57,16 @@ for i, dev in enumerate(DEVICE_LIST):
 
         fplug = FPlugDevice(dev_file)
 
-        json = json.dumps({
+        result = json.dumps({
             'hostname': dev['name'],
             'power': fplug.get_power_realtime(),
+            'temp': fplug.get_temperature(),
+            'humi': fplug.get_humidity(),
             'self_time': 0,
-        })
-        logger.info(json)
-        print(json, ensure_ascii=False)
+        }, ensure_ascii=False)
+
+        logger.info(result)
+        print(result)
     except:
         logger.warning(traceback.format_exc())
         pass
