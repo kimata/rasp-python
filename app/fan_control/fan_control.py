@@ -21,14 +21,32 @@ GPIO_SW = 15
 INFLUXDB_HOST = '192.168.2.20:8086'
 
 class GZipRotator:
-    def __call__(self, source, dest):
-        os.rename(source, dest)
-        f_in = open(dest, 'rb')
-        f_out = gzip.open("%s.gz" % dest, 'wb')
-        f_out.writelines(f_in)
-        f_out.close()
-        f_in.close()
-        os.remove(dest)
+    def namer(name):
+        return name + '.gz'
+
+    def rotator(source, dest):
+        with open(source, 'rb') as fs:
+            with gzip.open(dest, 'wb') as fd:
+                fd.writelines(fs)
+        os.remove(source)
+
+def get_logger():
+    logger = logging.getLogger()
+    log_handler = logging.handlers.RotatingFileHandler(
+        '/dev/shm/fan_control.log',
+        encoding='utf8', maxBytes=1*1024*1024, backupCount=10,
+    )
+    log_handler.formatter = logging.Formatter(
+        fmt='%(asctime)s %(levelname)s %(name)s :%(message)s',
+        datefmt='%Y/%m/%d %H:%M:%S %Z'
+    )
+    log_handler.namer = GZipRotator.namer
+    log_handler.rotator = GZipRotator.rotator
+
+    logger.addHandler(log_handler)
+    logger.setLevel(level=logging.INFO)
+
+    return logger
 
 def influxdb_get(db, host, name):
     url = 'http://' + INFLUXDB_HOST + '/query'
@@ -70,19 +88,7 @@ def judge_fan_state(temp_out, temp_room):
     return False
 
 
-logger = logging.getLogger()
-log_handler = logging.handlers.RotatingFileHandler(
-    '/dev/shm/fan_control.log',
-    encoding='utf8', maxBytes=1*1024*1024, backupCount=10,
-)
-log_handler.formatter = logging.Formatter(
-    fmt='%(asctime)s %(levelname)s %(name)s :%(message)s',
-    datefmt='%Y/%m/%d %H:%M:%S %Z'
-)
-log_handler.rotator = GZipRotator()
-
-logger.addHandler(log_handler)
-logger.setLevel(level=logging.INFO)
+logger = get_logger()
 
 temp_out = influxdb_get('sensor.esp32', 'ESP32-outdoor', 'temp')
 temp_room = influxdb_get('sensor.raspberrypi', 'rasp-storeroom', 'temp')
