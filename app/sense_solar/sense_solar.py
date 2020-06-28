@@ -90,6 +90,7 @@ def i2c_bus_reset():
     logger.warning('sudo i2cdetect -y 1')
     logger.warning(subprocess.check_output('sudo i2cdetect -y 1', shell=True).decode())
 
+    GPIO.setwarnings(False)
     GPIO.setup(2, GPIO.IN)
     GPIO.setup(3, GPIO.OUT)
     if GPIO.input(2) == GPIO.LOW:
