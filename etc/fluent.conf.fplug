@@ -17,7 +17,7 @@
 
   command python3 "/home/ubuntu/rasp-python/app/sense_fplug/sense_fplug.py"
   format json
-  run_interval 10s
+  run_interval 5s
 </source>
 
 <filter sensor.**>
