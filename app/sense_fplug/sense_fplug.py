@@ -28,7 +28,7 @@ class GZipRotator:
 def get_logger():
     logger = logging.getLogger()
     log_handler = logging.handlers.RotatingFileHandler(
-        '/dev/shm/fan_control.log',
+        '/dev/shm/sense_fplug.log',
         encoding='utf8', maxBytes=1*1024*1024, backupCount=10,
     )
     log_handler.formatter = logging.Formatter(
@@ -65,6 +65,6 @@ for i, dev in enumerate(DEVICE_LIST):
         logger.info(json)
         print(json, ensure_ascii=False)
     except:
-        logger.warn(traceback.format_exc())
+        logger.warning(traceback.format_exc())
         pass
 
