@@ -63,7 +63,7 @@ for i, dev in enumerate(DEVICE_LIST):
             'self_time': 0,
         })
         logger.info(json)
-        print(json, ensure_ascii=False))
+        print(json, ensure_ascii=False)
     except:
         logger.warn(traceback.format_exc())
         pass
