@@ -55,7 +55,7 @@ for i, dev in enumerate(DEVICE_LIST):
         if not os.path.exists(dev_file):
             subprocess.call('sudo rfcomm bind {0} {1}'.format(i, dev['addr']), shell=True)
 
-        fplug = FPlugDevice(dev_file)
+        fplug = FPlugDevice(dev_file, comm_wait=0.2)
 
         result = json.dumps({
             'hostname': dev['name'],
