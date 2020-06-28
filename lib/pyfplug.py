@@ -18,14 +18,11 @@ import sys
 from struct import *
 
 def hexdump(s):
-    print hexdump_str(s)
+    print(hexdump_str(s))
 
 def hexdump_str(s):
-    result = []
-    for ch in s:
-        b = unpack('B', ch)[0]
-        result.append('{0:0>2X}'.format(b))
-    return ' '.join(result)
+    return ' '.join([hex(x)[2:] for x in s])
+
 
 class UnknownState(Exception):
     pass
@@ -48,7 +45,7 @@ class FPlugDevice:
             try:
                 self.sfile = serial.Serial(self.port, 9600, timeout = timeout)
                 break
-            except serial.serialutil.SerialException, e:
+            except serial.serialutil.SerialException as e:
                 last_error = e
             time.sleep(retry_wait)
         if last_error:
@@ -89,7 +86,7 @@ class FPlugDevice:
             self.sfile.timeout = 1
             remain = self._sfile_read(1024)
             if remain:
-                print "!! BUFFER REMAIN !!:", hexdump_str(remain)
+                print("!! BUFFER REMAIN !!:", hexdump_str(remain))
             
         finally:
             self._sfile_set_timeout(current_timeout)
@@ -98,14 +95,14 @@ class FPlugDevice:
         if nthru:
             thrustr = self._sfile_read(nthru)
             if self.debug:
-                print "READ thru:", hexdump_str(thrustr)
+                print("READ thru:", hexdump_str(thrustr))
             if len(thrustr) < nthru:
                 if self.debug:
-                    print "Cannot read thru data"
+                    print("Cannot read thru data")
                 return None
         rstr = self._sfile_read(nmax)
         if self.debug:
-            print "READ:", hexdump_str(rstr)
+            print("READ:", hexdump_str(rstr))
         return rstr
 
     def read_byte(self, nthru = 0):
@@ -143,20 +140,20 @@ class FPlugDevice:
                 raise Exception('Unknown format')
         sending_data = pack(fmt, *data)
         if self.debug:
-            print "packing:", (fmt, data)
-            print "sending:", hexdump_str(sending_data)
+            print("packing:", (fmt, data))
+            print("sending:", hexdump_str(sending_data))
         ntry = 20
         while True:
             try:
                 # self.sfile.sendBreak(1.0)
                 self.sfile.write(sending_data)
                 break
-            except serial.serialutil.SerialException, e:
+            except serial.serialutil.SerialException as e:
                 if ntry <= 0:
                     raise e
                 ntry -= 1
                 if self.debug:
-                    print "Retry send:", ntry 
+                    print("Retry send:", ntry)
                 time.sleep(0.5)
 
     def plug_init(self):
@@ -359,21 +356,21 @@ def test_fplug_dev():
     # print "init:", dev.plug_init()
     
 
-    print "on:", dev.led_on()
+    print("on:", dev.led_on())
     time.sleep(0.5)
-    print "off:", dev.led_off()
+    print("off:", dev.led_off())
 
-    print "set_datetime:", dev.set_datetime()
+    print("set_datetime:", dev.set_datetime())
     
-    print "TMP:", dev.get_temperature(), "degree C"
-    print "HUM:", dev.get_humidity(), "%"
-    print "ILL:", dev.get_illuminance(), ""
-    print "PWR:", dev.get_power_realtime(), "W"
+    print("TMP:", dev.get_temperature(), "degree C")
+    print("HUM:", dev.get_humidity(), "%")
+    print("ILL:", dev.get_illuminance(), "")
+    print("PWR:", dev.get_power_realtime(), "W")
     
-    print "ACC:", dev.get_acc_power()
+    print("ACC:", dev.get_acc_power())
     
-    print "HIST PWR:", dev.get_power_data_history(datetime.datetime.now())
-    print "HIST MISC:", dev.get_misc_data_history(datetime.datetime.now())
+    print("HIST PWR:", dev.get_power_data_history(datetime.datetime.now()))
+    print("HIST MISC:", dev.get_misc_data_history(datetime.datetime.now()))
 
 if __name__ == '__main__':
     test_fplug_dev()
