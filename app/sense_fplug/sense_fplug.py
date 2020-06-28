@@ -52,7 +52,7 @@ subprocess.call('sudo rfcomm unbind all', shell=True)
 
 for i, dev in enumerate(DEVICE_LIST[os.uname()[1]]):
     try:
-        logger.info('DEVICE: {0}'.format(dev['name']))
+        logger.info('DEVICE: {0} {1}'.format(dev['name'], dev['addr']))
         dev_file = '/dev/rfcomm{0}'.format(i)
         if not os.path.exists(dev_file):
             subprocess.call('sudo rfcomm bind {0} {1}'.format(i, dev['addr']), shell=True)
