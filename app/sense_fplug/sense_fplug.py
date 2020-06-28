@@ -50,7 +50,7 @@ logger = get_logger()
 
 subprocess.call('sudo rfcomm unbind all', shell=True)
 
-for i, dev in enumerate(DEVICE_LIST):
+for i, dev in enumerate(DEVICE_LIST[os.uname()[1]]):
     try:
         logger.info('DEVICE: {0}'.format(dev['name']))
         dev_file = '/dev/rfcomm{0}'.format(i)
