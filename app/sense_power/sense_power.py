@@ -22,32 +22,37 @@ from meter.echonetenergy import EchonetEnergy
 from meter.echonetenergy import get_pan_info
 
 class GZipRotator:
-    def __call__(self, source, dest):
-        os.rename(source, dest)
-        f_in = open(dest, 'rb')
-        f_out = gzip.open("%s.gz" % dest, 'wb')
-        f_out.writelines(f_in)
-        f_out.close()
-        f_in.close()
-        os.remove(dest)
+    def namer(name):
+        return name + '.gz'
+
+    def rotator(source, dest):
+        with open(source, 'rb') as fs:
+            with gzip.open(dest, 'wb') as fd:
+                fd.writelines(fs)
+        os.remove(source)
+
+def get_logger():
+    logger = logging.getLogger()
+    log_handler = logging.handlers.RotatingFileHandler(
+        '/dev/shm/fan_control.log',
+        encoding='utf8', maxBytes=1*1024*1024, backupCount=10,
+    )
+    log_handler.formatter = logging.Formatter(
+        fmt='%(asctime)s %(levelname)s %(name)s :%(message)s',
+        datefmt='%Y/%m/%d %H:%M:%S %Z'
+    )
+    log_handler.namer = GZipRotator.namer
+    log_handler.rotator = GZipRotator.rotator
+
+    logger.addHandler(log_handler)
+    logger.setLevel(level=logging.INFO)
+
+    return logger
+
 
 import b_route_config
 
-logger = logging.getLogger()
-log_handler = logging.handlers.RotatingFileHandler(
-    '/tmp/sense_power.log',
-    encoding='utf8', maxBytes=10*1024*1024, backupCount=10,
-)
-log_handler.formatter = logging.Formatter(
-    fmt='%(asctime)s %(levelname)s %(name)s :%(message)s',
-    datefmt='%Y/%m/%d %H:%M:%S %Z'
-)
-log_handler.formatter.converter = time.gmtime
-log_handler.rotator = GZipRotator()
-
-logger.addHandler(log_handler)
-logger.setLevel(level=logging.INFO)
-
+logger = get_logger()
 
 echonet_if = BP35A1('/dev/ttyS0', False)
 
