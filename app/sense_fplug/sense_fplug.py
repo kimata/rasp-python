@@ -61,7 +61,7 @@ for i, dev in enumerate(DEVICE_LIST):
             'hostname': dev['name'],
             'power': fplug.get_power_realtime(),
             'self_time': 0,
-        }
+        })
         logger.info(json)
         print(json, ensure_ascii=False))
     except:
