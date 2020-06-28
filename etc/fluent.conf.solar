@@ -11,7 +11,7 @@
   run_interval 20s
 </source>
 
-<filter *.**>
+<filter sensor.**>
   @type record_transformer
   <record>
     hostname "#{Socket.gethostname}"
