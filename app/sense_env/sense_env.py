@@ -82,10 +82,14 @@ def scan_sensor(sensor_list):
 sensor_list = detect_sensor()
 value_map = scan_sensor(sensor_list)
 
-rssi = subprocess.check_output("sudo iwconfig 2>/dev/null | grep 'Signal level' | sed 's/.*Signal level=\\(.*\\) dBm.*/\\1/'", shell=True)
-rssi = rssi.rstrip().decode()
+wifi_rssi = subprocess.check_output("sudo iwconfig 2>/dev/null | grep 'Signal level' | sed 's/.*Signal level=\\(.*\\) dBm.*/\\1/'", shell=True)
+wifi_rssi = wifi_rssi.rstrip().decode()
 
-if re.compile('-\d+').search(rssi):
-    value_map['wifi_rssi'] = int(rssi)
+wifi_ch = subprocess.check_output("sudo iwlist wlan0 channel | grep Current | sed -r 's/^.*Channel ([0-9]+)\)/\\1/'", shell=True)
+wifi_ch = wifi_ch.rstrip().decode()
+
+if re.compile('-\d+').search(wifi_rssi):
+    value_map['wifi_rssi'] = int(wifi_rssi)
+    value_map['wifi_ch'] = int(wifi_ch)
 
 print(json.dumps(value_map))
