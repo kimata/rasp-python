@@ -29,8 +29,8 @@ class INA226:
         self.is_init = False
 
     def init(self):
-        # shunt register is 2mohm.
-        self.i2cbus.write(self.dev_addr, [0x05, 0x0A, 0x00])
+        # shunt register is 25mohm, and Currenst_LSB is 0.1mA/bit
+        self.i2cbus.write(self.dev_addr, [0x05, 0x08, 0x00])
 
         # 128 average, 8.2ms, continuous
         val = (0x04 << 9) | (0x07 << 6) | (0x07 << 3) | 0x07
@@ -56,12 +56,12 @@ class INA226:
 
         data = self.i2cbus.read(self.dev_addr, 2, 0x04)
         if ((data[0] >> 7) == 1):
-            curr = -1 * (0x10000 - (data[0] << 8 | data[1])) / 1000
+            curr = -1 * (0x10000 - (data[0] << 8 | data[1])) * 0.1 / 1000.0
         else:
             curr = (data[0] << 8 | data[1]) / 1000.0
 
         data = self.i2cbus.read(self.dev_addr, 2, 0x03)
-        power = (data[0] << 8 | data[1]) * 25 / 1000.0
+        power = (data[0] << 8 | data[1]) * 0.1 * 25 / 1000
 
         return [ round(volt, 3), round(curr, 3), round(power, 3) ]
 
