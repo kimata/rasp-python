@@ -29,9 +29,12 @@ sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'l
 
 import sensor.sht35
 import sensor.ina226
+import sensor.sps30
+import sensor.ads1015
 
 
-I2C_BUS = 0x1 	      # I2C のバス番号 (Raspberry Pi は 0x1)
+I2C_ARM_BUS = 0x1       # Raspberry Pi のデフォルトの I2C バス番号
+I2C_VC_BUS  = 0x0       # dtparam=i2c_vc=on で有効化される I2C のバス番号
 RETRY   = 3           # デバイスをスキャンするときのリトライ回数
 
 SHT35_DEV_ADDR          = 0x44 # SHT-35 の I2C デバイスアドレス
@@ -110,16 +113,22 @@ logger = get_logger()
 
 value_map = scan_sensor(
     [
-        sensor.sht35.SHT35(I2C_BUS, SHT35_DEV_ADDR),
-        sensor.ina226.INA226(I2C_BUS, INA226_PANEL_DEV_ADDR, 'panel_'),
-        sensor.ina226.INA226(I2C_BUS, INA226_CHARGE_DEV_ADDR, 'charge_'),
-        sensor.ina226.INA226(I2C_BUS, INA226_BATTERY_DEV_ADDR, 'battery_'),
+        sensor.sht35.SHT35(I2C_VC_BUS, SHT35_DEV_ADDR),
+        sensor.ina226.INA226(I2C_ARM_BUS, INA226_PANEL_DEV_ADDR, 'panel_'),
+        sensor.ina226.INA226(I2C_ARM_BUS, INA226_CHARGE_DEV_ADDR, 'charge_'),
+        sensor.ina226.INA226(I2C_ARM_BUS, INA226_BATTERY_DEV_ADDR, 'battery_'),
+        sensor.sps30.SPS30(I2C_VC_BUS),
+        sensor.ads1015.ADS1015(I2C_VC_BUS),
     ]
 )
 
 logger.info(json.dumps(value_map))
 
 try:
+    mvolt = value_map['mvolt']
+    del value_map['mvolt']
+    value_map['solar_rad'] = round(mvolt / 6.98 * 1000, 2)
+
     efficiency = 0.0
     if (value_map['panel_power'] > 0):
         efficiency = 100.0 * value_map['charge_power'] / value_map['panel_power']
