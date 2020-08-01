@@ -110,8 +110,8 @@ class SPS30:
         value = self.get_value()
 
         label = [
-            'mass_pm1r0', 'mass_pm2r5', 'mass_pm4r0', 'mass_pm10r0',
-            'num_pm0r5', 'num_pm1r0', 'num_pm2r5', 'num_pm4r0', 'num_pm10r0',
+            'pm10', 'pm25', 'pm40', 'pm100',
+            'num_pm5', 'num_pm10', 'num_pm25', 'num_pm40', 'num_pm100',
             'typ_size'
         ]
 
