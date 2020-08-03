@@ -131,7 +131,8 @@ try:
 
     power_efficiency = 0.0
     if (solar_rad > 1):
-        power_efficiency = value_map['panel_power'] / ((0.49 ** 2) * 2 * solar_rad)
+        # NOTE: The size of my solar panel is 49cm squere
+        power_efficiency = 100.0 * value_map['panel_power'] / ((0.49 ** 2) * 2 * solar_rad)
 
     charge_efficiency = 0.0
     if (value_map['panel_power'] > 0):
