@@ -127,14 +127,21 @@ logger.info(json.dumps(value_map))
 try:
     mvolt = value_map['mvolt']
     del value_map['mvolt']
-    value_map['solar_rad'] = round(mvolt / 6.98 * 1000, 2)
+    solar_rad = mvolt / 6.98 * 1000
 
-    efficiency = 0.0
+    power_efficiency = 0.0
+    if (solar_rad > 1):
+        power_efficiency = value_map['panel_power'] / ((0.49 ** 2) * 2 * solar_rad)
+
+    charge_efficiency = 0.0
     if (value_map['panel_power'] > 0):
-        efficiency = 100.0 * value_map['charge_power'] / value_map['panel_power']
-        if efficiency > 100:
-            efficiency = 100.0
-    value_map['charge_efficiency'] = round(efficiency, 2)
+        charge_efficiency = 100.0 * value_map['charge_power'] / value_map['panel_power']
+        if charge_efficiency > 100:
+            charge_efficiency = 100.0
+
+    value_map['solar_rad'] = round(solar_rad, 2)
+    value_map['power_efficiency'] = round(power_efficiency, 2)
+    value_map['charge_efficiency'] = round(charge_efficiency, 2)
 except Exception as e:
     logger.warning(traceback.format_exc())
     i2c_bus_reset()
