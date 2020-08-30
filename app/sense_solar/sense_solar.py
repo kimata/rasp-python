@@ -127,6 +127,8 @@ logger.info(json.dumps(value_map))
 try:
     mvolt = value_map['mvolt']
     del value_map['mvolt']
+    if (mvolt < 0):
+        mvolt = 0
     solar_rad = mvolt / 6.98 * 1000
 
     power_efficiency = 0.0
