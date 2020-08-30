@@ -43,7 +43,7 @@ class ADS1015:
         self.i2cbus.write(self.dev_addr, [self.REG_VALUE])
 
         value = self.i2cbus.read(self.DEV_ADDR, 2)
-        mvolt = (int.from_bytes(value, byteorder='big', signed=True) >> 4)* 0.125
+        mvolt = int.from_bytes(value, byteorder='big', signed=True) * 0.0078125
 
         return [ round(mvolt, 2) ]
 
