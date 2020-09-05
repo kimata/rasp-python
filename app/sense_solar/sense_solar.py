@@ -143,6 +143,9 @@ try:
         charge_efficiency = 100.0 * value_map['charge_power'] / value_map['panel_power']
         if charge_efficiency > 100:
             charge_efficiency = 100.0
+
+    value_map['solar_rad'] = round(solar_rad, 2)
+    value_map['power_efficiency'] = round(power_efficiency, 2)
     value_map['charge_efficiency'] = round(charge_efficiency, 2)
 except Exception as e:
     logger.warning(traceback.format_exc())
