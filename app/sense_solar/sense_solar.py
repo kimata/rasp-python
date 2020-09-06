@@ -128,14 +128,14 @@ try:
     mvolt = value_map['mvolt']
     del value_map['mvolt']
 
-    value_map['solar_rad'] = round(mvolt / 6.98 * 1000, 2)
-    if value_map['solar_rad'] < 0:
-        value_map['solar_rad'] = 0.0
+    solar_rad = round(mvolt / 6.98 * 1000, 2)
+    if solar_rad < 0:
+        solar_rad = 0.0
 
-    if value_map['solar_rad'] < 1:
+    if solar_rad < 1:
         value_map['power_efficiency'] = 0.0
     else:
-        power_efficiency = 100.0 * value_map['panel_power'] / (value_map['solar_rad'] * (0.455-0.05)*(0.510-0.05)*2)
+        power_efficiency = 100.0 * value_map['panel_power'] / (solar_rad * (0.455-0.05)*(0.510-0.05)*2)
         value_map['power_efficiency'] = round(power_efficiency, 2)
 
     charge_efficiency = 0.0
