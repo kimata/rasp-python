@@ -133,10 +133,10 @@ try:
         solar_rad = 0.0
 
     if solar_rad < 1:
-        value_map['power_efficiency'] = 0.0
+        power_efficiency = 0.0
     else:
         power_efficiency = 100.0 * value_map['panel_power'] / (solar_rad * (0.455-0.05)*(0.510-0.05)*2)
-        value_map['power_efficiency'] = round(power_efficiency, 2)
+        power_efficiency = round(power_efficiency, 2)
 
     charge_efficiency = 0.0
     if (value_map['panel_power'] > 0):
