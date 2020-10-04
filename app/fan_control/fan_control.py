@@ -74,9 +74,13 @@ def fan_ctrl(mode):
     subprocess.call('sudo gpio -g mode {} out'.format(GPIO_SW), shell=True)
     subprocess.call('sudo gpio -g write {} {}'.format(GPIO_SW, 1 if mode else 0), shell=True)
 
-def judge_fan_state(temp_out, temp_room):
-    # 温度に基づいてファンの ON/OFF を決める
-    if temp_room is None:
+def judge_fan_state(temp_out, temp_room, volt_batt):
+    # 温度とバッテリー電圧に基づいてファンの ON/OFF を決める
+    if (temp_room is None) or (volt_batt is None):
+        return False
+
+    # バッテリー電圧が低い場合は止める
+    if volt_vatt < 12:
         return False
 
     if temp_room > 35:
@@ -92,9 +96,10 @@ logger = get_logger()
 
 temp_out = influxdb_get('sensor.esp32', 'ESP32-outdoor', 'temp')
 temp_room = influxdb_get('sensor.raspberrypi', 'rasp-storeroom', 'temp')
+volt_batt = influxdb_get('sensor.raspberrypi', 'rasp-storeroom', 'battery_voltage')
 
 if len(sys.argv) == 1:
-    state = judge_fan_state(temp_out, temp_room)
+    state = judge_fan_state(temp_out, temp_room, volt_batt)
 else:
     state = sys.argv[1].lower() == 'on'
 
