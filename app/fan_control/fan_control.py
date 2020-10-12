@@ -80,7 +80,7 @@ def judge_fan_state(temp_out, temp_room, volt_batt):
         return False
 
     # バッテリー電圧が低い場合は止める
-    if volt_batt < 12:
+    if volt_batt < 12.5:
         return False
 
     if temp_room > 35:
