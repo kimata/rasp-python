@@ -8,6 +8,8 @@
 # [センサ一覧]
 # - SHT-35      : 温度，湿度
 # - INA226      : 電圧，電流，電力
+# - SPS30       : PM2.5
+# - ADS1015     : 日射量
 
 import os
 import sys
