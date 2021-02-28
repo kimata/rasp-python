@@ -1,4 +1,4 @@
 SHELL=/bin/sh
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
-*/3 * * * *   root     setlock -Xn /tmp/jjy_clock.lock python3 "/home/ubuntu/rasp-python/app/jjy_clock/jjy_clock.py" > /dev/null
+*/3 * * * *   ubuntu     setlock -xn /dev/shm/jjy_clock.lock python3 "/home/ubuntu/rasp-python/app/jjy_clock/jjy_clock.py" > /dev/null
