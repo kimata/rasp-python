@@ -30,6 +30,7 @@ import sensor.lps22hb
 import sensor.tsl2561
 import sensor.ccs811
 import sensor.k30
+import sensor.scd4x
 
 I2C_ARM_BUS = 0x1       # Raspberry Pi のデフォルトの I2C バス番号
 I2C_VC_BUS  = 0x0       # dtparam=i2c_vc=on で有効化される I2C のバス番号
@@ -47,6 +48,7 @@ def detect_sensor():
         sensor.ccs811.CCS811(I2C_ARM_BUS),
         sensor.k30.K30(I2C_ARM_BUS),
         sensor.k30.K30(I2C_VC_BUS),
+        sensor.scd4x.SCD4x(I2C_ARM_BUS),
     ]
     sensor_list = []
     for dev in candidate_list:
