@@ -34,11 +34,9 @@ class SCD4x:
 
             return True
         except:
-            self.__reset()
             return False
 
     def __reset(self):
-        print("RESET")
         # sto_periodic_measurement
         self.i2cbus.write(self.dev_addr, [0x3f, 0x86])
         time.sleep(0.5)
