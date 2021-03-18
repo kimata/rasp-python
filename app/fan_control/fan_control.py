@@ -12,6 +12,7 @@ import time
 import logging
 import logging.handlers
 import gzip
+import os
 
 PWM_KHZ = 25
 PWM_DUTY_ON = 30
