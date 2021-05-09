@@ -13,6 +13,7 @@ if __name__ == '__main__':
     sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir))
 
 import i2cbus
+import pprint
 
 class ADS1015:
     NAME                = 'ADS1015'
@@ -26,9 +27,11 @@ class ADS1015:
         self.i2cbus = i2cbus.I2CBus(bus)
 
     def init(self):
-        fsr = 5
+        os = 1
+        mux = 4
+        pga = 1
         self.i2cbus.write(self.dev_addr,
-                          [self.REG_CONFIG, 0x80 | (fsr << 1), 0x03])
+                          [self.REG_CONFIG, (os << 7) | (mux << 4) | (pga << 1), 0x03])
 
     def ping(self):
         try:
@@ -43,9 +46,10 @@ class ADS1015:
         self.i2cbus.write(self.dev_addr, [self.REG_VALUE])
 
         value = self.i2cbus.read(self.DEV_ADDR, 2)
-        mvolt = int.from_bytes(value, byteorder='big', signed=True) * 0.0078125
+        raw = int.from_bytes(value, byteorder='big', signed=True) >> 4
+        mvolt = raw*2
 
-        return [ round(mvolt, 2) ]
+        return [ round(mvolt, 3) ]
 
     def get_value_map(self):
         value = self.get_value()
