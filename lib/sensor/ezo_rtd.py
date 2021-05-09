@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-# EZO-pH を使って pH を取得するライブラリです．
+# EZO-RTD を使って水温を取得するライブラリです．
 
 import time
 import struct
@@ -21,16 +21,6 @@ class EZO_RTD:
 
     DEV_ADDR		= 0x66 # 7bit
 
-    RAM_CO2		= 0x08
-    RAM_FIRM		= 0x62
-
-    WRITE_RAM		= 0x1 << 4
-    READ_RAM		= 0x2 << 4
-    WRITE_EE		= 0x3 << 4
-    READ_EE		= 0x4 << 4
-
-    RETRY_COUNT         = 5
-    
     def __init__(self, bus, dev_addr=DEV_ADDR):
         self.bus = bus
         self.dev_addr = dev_addr
@@ -66,7 +56,7 @@ class EZO_RTD:
     def get_value_map(self):
         value = self.get_value()
 
-        return { 'ph': value }
+        return { 'temp': value }
     
 if __name__ == '__main__':
     # TEST Code
