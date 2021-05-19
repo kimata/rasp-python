@@ -24,15 +24,19 @@ class FD_Q10C:
         return True
 
     def get_value(self):
-        ser = driver.com_start(self.spi)
-        flow = driver.isdu_read(self.spi, ser, 0x94, driver.DATA_TYPE_UINT16) * 0.01
-        driver.com_stop(self.spi, ser)
+        try:
+            ser = driver.com_start(self.spi)
+            flow = driver.isdu_read(self.spi, ser, 0x94, driver.DATA_TYPE_UINT16) * 0.01
+            driver.com_stop(self.spi, ser)
 
-        # エーハイムの16/22用パイプの場合，内径14mm なので，内径12.7mの呼び径3/8の
-        # 値に対して補正をかける．
-        flow *= (14*14) / (12.7*12.7)
+            # エーハイムの16/22用パイプの場合，内径14mm なので，内径12.7mの呼び径3/8の
+            # 値に対して補正をかける．
+            flow *= (14*14) / (12.7*12.7)
 
-        return round(flow, 2)
+            return round(flow, 2)
+        except RuntimeError as e:
+            driver.com_stop(self.spi, ser, True)
+            raise
 
     def get_value_map(self):
         value = self.get_value()
