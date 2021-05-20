@@ -6,25 +6,52 @@
 import spidev
 import serial
 import struct
+import logging
+import logging.handlers
+import pprint
 import time
 
 import proto.io_link as io_link
 
+DEBUG = False
 
 DATA_TYPE_RAW = 0
 DATA_TYPE_STRING = 1
 DATA_TYPE_UINT16 = 2
 
+logger = logging.getLogger(__name__)
+
+log_handler = logging.handlers.RotatingFileHandler(
+    '/dev/shm/io_link.log',
+    encoding='utf8', maxBytes=1*1024*1024, backupCount=10,
+)
+log_handler.formatter = logging.Formatter(
+    fmt='%(asctime)s %(levelname)s %(name)s - %(message)s',
+    datefmt='%Y/%m/%d %H:%M:%S %Z'
+)
+
+if DEBUG:
+    logger.addHandler(log_handler)
+    logger.setLevel(logging.DEBUG)
+else:
+    logger.addHandler(logging.NullHandler())
+
+
+def error(message):
+    logger.error(message)
+    raise RuntimeError(message)
+
 
 def warn(message):
-    # FIXME
-    print(message)
+    logger.warn(message)
+
+
+def info(message):
+    logger.info(message)
 
 
 def dump_byte_list(label, byte_list):
-    # for DEBUG
-    # print('{}: {}'.format(label, ', '.join(hex(x) for x in byte_list)))
-    return
+    logger.info('{}: {}'.format(label, ', '.join(hex(x) for x in byte_list)))
 
 
 def ltc2874_reg_read(spi, reg):
@@ -114,7 +141,7 @@ def com_write(spi, ser, byte_list):
     # Drive enable
     ltc2874_reg_write(spi, 0x0D, 0x01)
 
-    dump_byte_list('SEND: ', byte_list)
+    dump_byte_list('SEND', byte_list)
 
     ser.write(struct.pack('{}B'.format(len(byte_list)), *byte_list))
     ser.flush()
@@ -127,12 +154,14 @@ def com_read(spi, ser, length):
     recv = ser.read(length)
     byte_list = struct.unpack('{}B'.format(len(recv)), recv)
 
-    dump_byte_list('RECV: ', byte_list)
+    dump_byte_list('RECV', byte_list)
 
     return byte_list
     
 
 def dir_param_read(spi, ser, addr):
+    info('***** CALL: dir_param_read(addr: 0x{:x}) ****'.format(addr))
+
     msq = msq_build(io_link.MSQ_RW_READ, io_link.MSQ_CH_PAGE,
                     addr, io_link.MSQ_TYPE_0, None)
     com_write(spi, ser, msq)
@@ -140,14 +169,16 @@ def dir_param_read(spi, ser, addr):
     data = com_read(spi, ser, 4)[2:]
 
     if (len(data) < 2):
-        raise RuntimeError('response is too short')
+        error('response is too short')
     elif (data[1] != msq_checksum([data[0]])):
-        raise RuntimeError('checksum unmatch')
+        error('checksum unmatch')
 
     return data[0]
 
 
 def dir_param_write(spi, ser, addr, value):
+    info('***** CALL: dir_param_write(addr: 0x{:x}, value: 0x{:x}) ****'.format(addr, value))
+
     msq = msq_build(io_link.MSQ_RW_WRITE, io_link.MSQ_CH_PAGE,
                     addr, io_link.MSQ_TYPE_0, [value])
     com_write(spi, ser, msq)
@@ -155,9 +186,9 @@ def dir_param_write(spi, ser, addr, value):
     data = com_read(spi, ser, 4)[3:]
 
     if (len(data) < 1):
-        raise RuntimeError('response is too short')
+        error('response is too short')
     elif (data[0] != msq_checksum([])):
-        raise RuntimeError('checksum unmatch')
+        error('checksum unmatch')
 
 
 def isdu_req_build(index):
@@ -193,6 +224,8 @@ def isdu_res_read(spi, ser, flow):
 
 
 def isdu_read(spi, ser, index, data_type):
+    info('***** CALL: isdu_read(index: 0x{:x}) ****'.format(index))
+
     isdu_req = isdu_req_build(index)
 
     for msq in isdu_req:
@@ -202,21 +235,26 @@ def isdu_read(spi, ser, index, data_type):
     chk = 0x00
     flow = 1
     data_list = []
-    header = isdu_res_read(spi, ser, 0x10)
-    chk ^= header
+    while True:
+        header = isdu_res_read(spi, ser, 0x10)
+        chk = header
 
-    if (header >> 4) == 0x0D:
-        if (header & 0x0F) == 0x01:
-            remain = isdu_res_read(spi, ser, flow) - 2
-            flow += 1
-            chk ^= length
+        if (header >> 4) == 0x0D:
+            if (header & 0x0F) == 0x01:
+                remain = isdu_res_read(spi, ser, flow) - 2
+                flow += 1
+                chk ^= length
+            else:
+                remain = (header & 0x0F) - 1
+            break
+        elif header == 0x01:
+            info('WAIT response')
+            continue
+        elif (header >> 4) == 0x0C:
+            error('ERROR reponse')
         else:
-            remain = (header & 0x0F) - 1
-    elif (header >> 4) == 0x0C:
-        # ERROR
-        raise RuntimeError('ERROR reponse')
-    else:
-        raise RuntimeError('INVALID reponse')
+            logger.warn("INVALID response: %s" % pprint.pformat(header))
+            error('INVALID reponse')
 
     for x in range(remain-1):
         data = isdu_res_read(spi, ser, flow & 0xF)
@@ -227,7 +265,7 @@ def isdu_read(spi, ser, index, data_type):
     chk ^= isdu_res_read(spi, ser, flow)
 
     if chk != 0x00:
-        raise RuntimeError('ISDU checksum unmatch')
+        error('ISDU checksum unmatch')
 
     if data_type == DATA_TYPE_STRING:
         return struct.pack('{}B'.format(len(data_list)), *data_list).decode('utf-8')
