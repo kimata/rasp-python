@@ -63,13 +63,17 @@ def msq_build(rw, ch, addr, mtype, data):
     return msq
 
 
-def com_init():
+def com_open():
     spi = spidev.SpiDev()
     spi.open(0, 0)
     spi.max_speed_hz = 100000
     spi.mode = 1
 
     return spi
+
+
+def com_close(spi):
+    spi.close()
 
 
 def com_start(spi):

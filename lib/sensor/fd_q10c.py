@@ -18,7 +18,10 @@ class FD_Q10C:
     NAME                = 'FD-Q10C'
 
     def __init__(self):
-        self.spi = driver.com_init()
+        self.spi = driver.com_open()
+
+    def __del__(self):
+        driver.com_close(self.spi)
 
     def ping(self):
         return True
