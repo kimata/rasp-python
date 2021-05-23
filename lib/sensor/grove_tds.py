@@ -25,13 +25,14 @@ class GROVE_TDS:
     def ping(self):
         return self.adc.ping()
 
-    def get_value(self):
+    def get_value(self, temp=25.0):
         volt = self.adc.get_value()[0] / 1000.0
         tds = (133.42*volt*volt*volt - 255.86*volt*volt + 857.39*volt)*0.5
+        tds /= 1 + 0.02 * (temp-25)
 
         return [ round(tds, 3) ]
 
-    def get_value_map(self):
+    def get_value_map(self, temp=25.0):
         value = self.get_value()
 
         return { 'tds': value[0] }
