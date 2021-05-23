@@ -33,7 +33,7 @@ class GROVE_TDS:
         return [ round(tds, 3) ]
 
     def get_value_map(self, temp=25.0):
-        value = self.get_value()
+        value = self.get_value(temp)
 
         return { 'tds': value[0] }
 
