@@ -108,6 +108,7 @@ def com_start(spi):
 
     if enl1 != 0x11:
         # Power on, CQ OC Timeout = 480us
+        info('***** Power-On IO-Link ****')
         ltc2874_reg_write(spi, 0x0E, 0x11)
         time.sleep(2)
 
@@ -134,6 +135,7 @@ def com_stop(spi, ser, is_power_off=False):
 
     if is_power_off:
         # Power off
+        info('***** Power-Off IO-Link ****')
         ltc2874_reg_write(spi, 0x0E, 0x00)
 
 
