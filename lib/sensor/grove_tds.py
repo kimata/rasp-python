@@ -17,7 +17,7 @@ import pprint
 
 class GROVE_TDS:
     NAME                = 'GROVE-TDS'
-    DEV_ADDR            = 0x48 # 7bit
+    DEV_ADDR            = 0x4A # 7bit
 
     def __init__(self, bus, dev_addr=DEV_ADDR):
         self.adc = sensor.ads1015.ADS1015(bus, dev_addr)
