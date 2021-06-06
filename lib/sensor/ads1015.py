@@ -35,7 +35,7 @@ class ADS1015:
 
     def ping(self):
         try:
-            value = self.i2cbus.read(self.DEV_ADDR, 2, self.REG_CONFIG)
+            value = self.i2cbus.read(self.dev_addr, 2, self.REG_CONFIG)
             return value[0] != 0
         except:
             return False
@@ -45,7 +45,7 @@ class ADS1015:
         time.sleep(0.1)
         self.i2cbus.write(self.dev_addr, [self.REG_VALUE])
 
-        value = self.i2cbus.read(self.DEV_ADDR, 2)
+        value = self.i2cbus.read(self.dev_addr, 2)
         raw = int.from_bytes(value, byteorder='big', signed=True) >> 4
         mvolt = raw*2
 
