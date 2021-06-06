@@ -28,7 +28,7 @@ class GROVE_TDS:
     def get_value(self, temp=25.0):
         volt = self.adc.get_value()[0] / 1000.0
         tds = (133.42*volt*volt*volt - 255.86*volt*volt + 857.39*volt)*0.5
-        tds /= 1 + 0.02 * (temp-25)
+        tds /= 1 + 0.018 * (temp-25) # 0.018 は実測データから算出
 
         return [ round(tds, 3) ]
 
