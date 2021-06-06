@@ -43,11 +43,19 @@ def detect_sensor():
 
 def scan_sensor(sensor_list):
     value_map = {}
+    temp = 25 # TDS の温度補正用
     for sensor in sensor_list:
         for i in range(RETRY):
             try:
-                val = sensor.get_value_map()
+                if sensor.NAME == 'GROVE-TDS':
+                    val = sensor.get_value_map(temp)
+                else:
+                    val = sensor.get_value_map()
+
                 value_map.update(val)
+
+                if sensor.NAME == 'EZO-RTD':
+                    temp = val['temp']
                 break
             except:
                 pass
