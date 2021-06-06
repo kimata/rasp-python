@@ -20,6 +20,7 @@ json.encoder.FLOAT_REPR = lambda f: ("%.2f" % f)
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'lib'))
 
 import sensor.ezo_rtd
+import sensor.ezo_ph
 import sensor.grove_tds
 
 I2C_ARM_BUS = 0x1       # Raspberry Pi のデフォルトの I2C バス番号
@@ -29,6 +30,7 @@ RETRY       = 3         # デバイスをスキャンするときのリトライ
 def detect_sensor():
     candidate_list = [
         sensor.ezo_rtd.EZO_RTD(I2C_ARM_BUS),
+        sensor.ezo_ph.EZO_PH(I2C_ARM_BUS),
         sensor.grove_tds.GROVE_TDS(I2C_ARM_BUS),
     ]
     sensor_list = []
