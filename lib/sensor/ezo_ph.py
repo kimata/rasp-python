@@ -48,13 +48,12 @@ class EZO_PH:
     def get_value(self):
         value = self.exec_command('R')
 
-        return float(value[1:].decode().rstrip('\x00'))
+        return round(float(value[1:].decode().rstrip('\x00')), 3)
 
-    # def exec_cal(self, point, value):
-        # value = self.__exec_command(b'R')
-
-        # return float(value[1:].decode().rstrip('\x00'))
-
+#     def exec_cal(self, point, value):
+#         value = self.__exec_command(b'R')
+#
+#         return float(value[1:].decode().rstrip('\x00'))
     
     def exec_command(self, cmd):
         command = self.__compose_command(cmd.encode())
