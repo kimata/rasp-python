@@ -13,7 +13,7 @@ for dev in devices:
     print(
         json.dumps({
             'hostname': dev.name,
-            'power': round(dev.insight_params['currentpower']/1000.0, 3),
+            'power': int(dev.insight_params['currentpower']/1000),
             'self_time': 0,
         }, ensure_ascii=False)
     )
