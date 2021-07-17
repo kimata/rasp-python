@@ -13,7 +13,7 @@
 
 <source>
   @type exec
-  tag sensor
+  tag wemo
 
   command python3 "/home/ubuntu/rasp-python/app/sense_wemo/sense_wemo.py"
   format json
