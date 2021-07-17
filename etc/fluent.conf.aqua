@@ -11,6 +11,16 @@
   run_interval 20s
 </source>
 
+<source>
+  @type exec
+  tag sensor
+
+  command python3 "/home/ubuntu/rasp-python/app/sense_wemo/sense_wemo.py"
+  format json
+  run_interval 20s
+</source>
+
+
 <filter sensor.**>
   @type record_transformer
   <record>
