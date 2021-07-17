@@ -28,7 +28,7 @@
   </record>
 </filter>
 
-<match sensor.**>
+<match {sensor.**,wemo.**}>
   @type forward
   <buffer>
     @type memory
