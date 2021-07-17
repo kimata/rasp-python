@@ -14,6 +14,7 @@ import time
 import json
 import subprocess
 import re
+from pathlib import Path
 
 json.encoder.FLOAT_REPR = lambda f: ("%.2f" % f)
 
@@ -27,6 +28,17 @@ import sensor.grove_tds
 I2C_ARM_BUS = 0x1       # Raspberry Pi のデフォルトの I2C バス番号
 I2C_VC_BUS  = 0x0       # dtparam=i2c_vc=on で有効化される I2C のバス番号
 RETRY       = 3         # デバイスをスキャンするときのリトライ回数
+
+def check_time_interval(path, interval):
+    file = Path(path)
+
+    if file.is_file() and ((time.time() - file.stat().st_mtime) < interval):
+        expired = False
+    else:
+        expired = True
+        file.touch()
+
+    return expired
 
 def detect_sensor():
     candidate_list = [
@@ -53,6 +65,11 @@ def scan_sensor(sensor_list):
             try:
                 if sensor.NAME == 'GROVE-TDS':
                     val = sensor.get_value_map(temp)
+                elif sensor.NAME == 'EZO-DO':
+                    if (check_time_interval('/dev/shm/ezo-do', 30*60)):
+                        val = sensor.get_value_map()
+                    else:
+                        val = {}
                 else:
                     val = sensor.get_value_map()
 
