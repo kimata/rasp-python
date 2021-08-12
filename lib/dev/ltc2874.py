@@ -10,9 +10,12 @@ import logging
 import logging.handlers
 import pprint
 import time
+import sys
 
 import proto.io_link as io_link
 
+# NOTE: 下記を False にすると，通信ログは標準エラーではなく，
+# /dev/shm/io_link.log に出力されるようになります．
 DEBUG = False
 
 DATA_TYPE_RAW = 0
@@ -21,20 +24,20 @@ DATA_TYPE_UINT16 = 2
 
 logger = logging.getLogger(__name__)
 
-log_handler = logging.handlers.RotatingFileHandler(
-    '/dev/shm/io_link.log',
-    encoding='utf8', maxBytes=1*1024*1024, backupCount=10,
-)
+if DEBUG:
+    log_handler = logging.StreamHandler(sys.stdout)
+    logger.setLevel(logging.DEBUG)
+else:
+    log_handler = logging.handlers.RotatingFileHandler(
+        '/dev/shm/io_link.log',
+        encoding='utf8', maxBytes=1*1024*1024, backupCount=10,
+    )
+
+logger.addHandler(log_handler)
 log_handler.formatter = logging.Formatter(
     fmt='%(asctime)s %(levelname)s %(name)s - %(message)s',
     datefmt='%Y/%m/%d %H:%M:%S %Z'
 )
-
-if DEBUG:
-    logger.addHandler(log_handler)
-    logger.setLevel(logging.DEBUG)
-else:
-    logger.addHandler(logging.NullHandler())
 
 
 def error(message):
