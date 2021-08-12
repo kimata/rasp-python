@@ -71,4 +71,3 @@ if __name__ == '__main__':
 
     if (ping):
         pprint.pprint(ezo_rtd.get_value_map())
-

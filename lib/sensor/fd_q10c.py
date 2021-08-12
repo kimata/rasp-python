@@ -28,9 +28,11 @@ class FD_Q10C:
 
     def get_value(self):
         try:
-            ser = driver.com_start(self.spi)
-            flow = driver.isdu_read(self.spi, ser, 0x94, driver.DATA_TYPE_UINT16) * 0.01
-            driver.com_stop(self.spi, ser)
+            spi = driver.com_open()
+            ser = driver.com_start(spi)
+
+            flow = driver.isdu_read(spi, ser, 0x94, driver.DATA_TYPE_UINT16) * 0.01
+            driver.com_stop(spi, ser)
 
             # エーハイムの16/22用パイプの場合，内径14mm なので，内径12.7mの呼び径3/8の
             # 値に対して補正をかける．
@@ -38,7 +40,7 @@ class FD_Q10C:
 
             return round(flow, 2)
         except RuntimeError as e:
-            driver.com_stop(self.spi, ser, True)
+            driver.com_stop(spi, ser, True)
             raise
 
     def get_value_map(self):
@@ -50,7 +52,6 @@ if __name__ == '__main__':
     # TEST Code
     import pprint
     import sensor.fd_q10c
-    I2C_BUS = 0x1 # I2C のバス番号 (Raspberry Pi は 0x1)
 
     fd_q10c = sensor.fd_q10c.FD_Q10C()
 
