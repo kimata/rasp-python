@@ -24,6 +24,7 @@ import sensor.ezo_rtd
 import sensor.ezo_ph
 import sensor.ezo_do
 import sensor.grove_tds
+import sensor.fd_q10c
 
 I2C_ARM_BUS = 0x1       # Raspberry Pi のデフォルトの I2C バス番号
 I2C_VC_BUS  = 0x0       # dtparam=i2c_vc=on で有効化される I2C のバス番号
@@ -46,6 +47,7 @@ def detect_sensor():
         sensor.ezo_ph.EZO_PH(I2C_ARM_BUS),
         sensor.ezo_do.EZO_DO(I2C_ARM_BUS),
         sensor.grove_tds.GROVE_TDS(I2C_ARM_BUS),
+        sensor.fd_q10c.FD_Q10C(),
     ]
     sensor_list = []
     for dev in candidate_list:
