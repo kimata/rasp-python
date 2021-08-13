@@ -70,5 +70,5 @@ if __name__ == '__main__':
 
     if (ping):
         pprint.pprint(ezo_do.get_value_map())
-#        pprint.pprint(ezo_do.exec_command('Cal'))
+        # pprint.pprint(ezo_do.exec_command('Cal'))
         # pprint.pprint(ezo_ph.exec_command('Cal,?'))
