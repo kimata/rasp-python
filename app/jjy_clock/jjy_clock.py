@@ -10,7 +10,7 @@ import datetime
 import time
 
 # 時刻情報を何分毎に送信するか
-INTERVAL  = 3
+INTERVAL  = 1
 # JJY 時刻符号を出力する端子
 GPIP_PORT = 4
 
