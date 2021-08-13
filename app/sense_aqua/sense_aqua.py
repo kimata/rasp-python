@@ -6,10 +6,7 @@
 # センサの存在は自動検出します．
 #
 # [センサ一覧]
-# - HDC1050     : 温度，湿度
-# - LPS25H      : 気圧
-# - TSL2561     : 照度
-# - K30         : CO2 濃度
+# - EZO-RDT     : 水温
 
 import os
 import sys
@@ -17,38 +14,40 @@ import time
 import json
 import subprocess
 import re
+from pathlib import Path
 
 json.encoder.FLOAT_REPR = lambda f: ("%.2f" % f)
 
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'lib'))
 
-import sensor.hdc1050
-import sensor.sht31
-import sensor.sht21
-import sensor.lps25h
-import sensor.lps22hb
-import sensor.tsl2561
-import sensor.ccs811
-import sensor.k30
-import sensor.scd4x
+import sensor.ezo_rtd
+import sensor.ezo_ph
+import sensor.ezo_do
+import sensor.grove_tds
+import sensor.fd_q10c
 
 I2C_ARM_BUS = 0x1       # Raspberry Pi のデフォルトの I2C バス番号
 I2C_VC_BUS  = 0x0       # dtparam=i2c_vc=on で有効化される I2C のバス番号
 RETRY       = 3         # デバイスをスキャンするときのリトライ回数
-CO2_MAX     = 5000      # CO2 濃度の最大値 (時々異常値を返すのでその対策)
+
+def check_time_interval(path, interval):
+    file = Path(path)
+
+    if file.is_file() and ((time.time() - file.stat().st_mtime) < interval):
+        expired = False
+    else:
+        expired = True
+        file.touch()
+
+    return expired
 
 def detect_sensor():
     candidate_list = [
-        sensor.hdc1050.HDC1050(I2C_ARM_BUS),
-        sensor.sht31.SHT31(I2C_ARM_BUS),
-        sensor.sht21.SHT21(I2C_ARM_BUS),
-        sensor.lps25h.LPS25H(I2C_ARM_BUS),
-        sensor.lps22hb.LPS22HB(I2C_ARM_BUS),
-        sensor.tsl2561.TSL2561(I2C_ARM_BUS),
-        sensor.ccs811.CCS811(I2C_ARM_BUS),
-        sensor.k30.K30(I2C_ARM_BUS),
-        sensor.k30.K30(I2C_VC_BUS),
-        sensor.scd4x.SCD4x(I2C_ARM_BUS),
+        sensor.ezo_rtd.EZO_RTD(I2C_ARM_BUS),
+        sensor.ezo_ph.EZO_PH(I2C_ARM_BUS),
+        sensor.ezo_do.EZO_DO(I2C_ARM_BUS),
+        sensor.grove_tds.GROVE_TDS(I2C_ARM_BUS),
+        sensor.fd_q10c.FD_Q10C(),
     ]
     sensor_list = []
     for dev in candidate_list:
@@ -62,18 +61,24 @@ def detect_sensor():
 
 def scan_sensor(sensor_list):
     value_map = {}
+    temp = 25 # TDS の温度補正用
     for sensor in sensor_list:
         for i in range(RETRY):
             try:
-                val = sensor.get_value_map()
-                if sensor.NAME == 'K30' and val['co2'] > CO2_MAX:
-                    continue
-                if sensor.NAME == 'HDC1050' and val['humi'] == 100:
-                    continue
-                if (sensor.NAME == 'LPS22HB' or sensor.NAME == 'LPS25H') and \
-                   (val['press'] < 900 or val['press'] > 1100):
-                    continue
+                if sensor.NAME == 'GROVE-TDS':
+                    val = sensor.get_value_map(temp)
+                elif sensor.NAME == 'EZO-DO':
+                    if (check_time_interval('/dev/shm/ezo-do', 5*60)):
+                        val = sensor.get_value_map()
+                    else:
+                        val = {}
+                else:
+                    val = sensor.get_value_map()
+
                 value_map.update(val)
+
+                if sensor.NAME == 'EZO-RTD':
+                    temp = val['temp']
                 break
             except:
                 pass

@@ -12,13 +12,14 @@ import time
 import logging
 import logging.handlers
 import gzip
+import os
 
 PWM_KHZ = 25
 PWM_DUTY_ON = 30
 
 GPIO_SW = 15
 
-INFLUXDB_HOST = '192.168.2.20:8086'
+INFLUXDB_HOST = '192.168.0.10:8086'
 
 class GZipRotator:
     def namer(name):
@@ -94,7 +95,7 @@ def judge_fan_state(temp_out, temp_room, volt_batt):
 
 logger = get_logger()
 
-temp_out = influxdb_get('sensor.esp32', 'ESP32-outdoor', 'temp')
+temp_out = influxdb_get('sensor.esp32', 'ESP32-outdoor-1', 'temp')
 temp_room = influxdb_get('sensor.raspberrypi', 'rasp-storeroom', 'temp')
 volt_batt = influxdb_get('sensor.raspberrypi', 'rasp-storeroom', 'battery_voltage')
 
