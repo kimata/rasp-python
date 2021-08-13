@@ -68,7 +68,7 @@ def scan_sensor(sensor_list):
                 if sensor.NAME == 'GROVE-TDS':
                     val = sensor.get_value_map(temp)
                 elif sensor.NAME == 'EZO-DO':
-                    if (check_time_interval('/dev/shm/ezo-do', 30*60)):
+                    if (check_time_interval('/dev/shm/ezo-do', 5*60)):
                         val = sensor.get_value_map()
                     else:
                         val = {}
