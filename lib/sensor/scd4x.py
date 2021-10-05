@@ -104,7 +104,7 @@ class SCD4x:
         temp = -45 + (175 * int.from_bytes(resp[2:4], byteorder='big')) / float(2**16 - 1)
         humi = 100 * int.from_bytes(resp[4:6], byteorder='big') / float(2**16 - 1)
 
-        return [co2, temp, humi]
+        return [co2,  round(temp, 4), round(humi, 1)]
 
     def get_value_map(self):
         value = self.get_value()
