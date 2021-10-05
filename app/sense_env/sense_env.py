@@ -28,6 +28,7 @@ import sensor.sht21
 import sensor.lps25h
 import sensor.lps22hb
 import sensor.tsl2561
+import sensor.apds9250
 import sensor.ccs811
 import sensor.k30
 import sensor.scd4x
@@ -39,16 +40,17 @@ CO2_MAX     = 5000      # CO2 濃度の最大値 (時々異常値を返すので
 
 def detect_sensor():
     candidate_list = [
+        sensor.k30.K30(I2C_ARM_BUS),
+        sensor.k30.K30(I2C_VC_BUS),
+        sensor.scd4x.SCD4x(I2C_ARM_BUS),
         sensor.hdc1050.HDC1050(I2C_ARM_BUS),
         sensor.sht31.SHT31(I2C_ARM_BUS),
         sensor.sht21.SHT21(I2C_ARM_BUS),
         sensor.lps25h.LPS25H(I2C_ARM_BUS),
         sensor.lps22hb.LPS22HB(I2C_ARM_BUS),
         sensor.tsl2561.TSL2561(I2C_ARM_BUS),
+        sensor.apds9250.APDS9250(I2C_ARM_BUS),
         sensor.ccs811.CCS811(I2C_ARM_BUS),
-        sensor.k30.K30(I2C_ARM_BUS),
-        sensor.k30.K30(I2C_VC_BUS),
-        sensor.scd4x.SCD4x(I2C_ARM_BUS),
     ]
     sensor_list = []
     for dev in candidate_list:
