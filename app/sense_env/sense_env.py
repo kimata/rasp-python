@@ -23,7 +23,6 @@ json.encoder.FLOAT_REPR = lambda f: ("%.2f" % f)
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, 'lib'))
 
 import sensor.hdc1050
-import sensor.sht35
 import sensor.sht31
 import sensor.sht21
 import sensor.lps25h
@@ -43,9 +42,7 @@ def detect_sensor():
     candidate_list = [
         sensor.k30.K30(I2C_ARM_BUS),
         sensor.k30.K30(I2C_VC_BUS),
-        sensor.scd4x.SCD4x(I2C_ARM_BUS),
         sensor.hdc1050.HDC1050(I2C_ARM_BUS),
-        sensor.sht35.SHT35(I2C_ARM_BUS),
         sensor.sht31.SHT31(I2C_ARM_BUS),
         sensor.sht21.SHT21(I2C_ARM_BUS),
         sensor.lps25h.LPS25H(I2C_ARM_BUS),
@@ -53,6 +50,7 @@ def detect_sensor():
         sensor.tsl2561.TSL2561(I2C_ARM_BUS),
         sensor.apds9250.APDS9250(I2C_ARM_BUS),
         sensor.ccs811.CCS811(I2C_ARM_BUS),
+        sensor.scd4x.SCD4x(I2C_ARM_BUS),
     ]
     sensor_list = []
     for dev in candidate_list:
