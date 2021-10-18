@@ -28,7 +28,7 @@ class ADS1015:
 
     def init(self):
         os = 1
-        mux = 4
+        mux = 0
         pga = 1
         self.i2cbus.write(self.dev_addr,
                           [self.REG_CONFIG, (os << 7) | (mux << 4) | (pga << 1), 0x03])
