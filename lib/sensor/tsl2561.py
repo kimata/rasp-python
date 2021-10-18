@@ -69,9 +69,11 @@ class TSL2561:
         
     def set_gain(self, gain):
         self.gain = gain
+        self.is_init = False
 
     def set_integ(self, integ):
         self.integ = integ
+        self.is_init = False
 
     def wait(self):
         if self.integ == self.INTEG_13MS:
@@ -92,7 +94,7 @@ class TSL2561:
 
         return (dev_id >> 4) == 0x1
     
-    def get_value(self):
+    def get_value_impl(self):
         if not self.is_init:
             self.init()
 
@@ -131,6 +133,19 @@ class TSL2561:
             return [ round(0.00146*ch0 - 0.00112*ch1, 1) ]
         else:
             return [ 0.0 ];
+
+
+    def get_value(self):
+        value = self.get_value_impl()
+
+        if (self.integ == self.INTEG_13MS) and (value[0] < 1000):
+            self.set_integ(self.INTEG_101MS)
+            return self.get_value_impl()
+        elif (self.integ == self.INTEG_101MS) and (value[0] > 10000):
+            self.set_integ(self.INTEG_13MS)
+            return self.get_value_impl()
+        else:
+            return value
 
     def get_value_map(self):
         value = self.get_value()
