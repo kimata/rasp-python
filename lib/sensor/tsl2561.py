@@ -138,10 +138,10 @@ class TSL2561:
     def get_value(self):
         value = self.get_value_impl()
 
-        if (self.integ == self.INTEG_13MS) and (value[0] < 1000):
-            self.set_integ(self.INTEG_101MS)
+        if (self.integ != self.INTEG_402MS) and (value[0] < 1000):
+            self.set_integ(self.INTEG_402MS)
             return self.get_value_impl()
-        elif (self.integ == self.INTEG_101MS) and (value[0] > 10000):
+        elif (self.integ != self.INTEG_13MS) and (value[0] > 10000):
             self.set_integ(self.INTEG_13MS)
             return self.get_value_impl()
         else:
