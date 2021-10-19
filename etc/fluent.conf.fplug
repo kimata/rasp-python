@@ -20,7 +20,7 @@
   run_interval 5s
 </source>
 
-<match {sensor.**,fplug.**}>
+<filter sensor.**>
   @type record_transformer
   <record>
     hostname "#{Socket.gethostname}"
