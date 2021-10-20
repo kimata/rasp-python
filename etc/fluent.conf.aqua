@@ -20,7 +20,6 @@
   run_interval 20s
 </source>
 
-
 <filter sensor.**>
   @type record_transformer
   <record>
@@ -31,7 +30,8 @@
 <match {sensor.**,wemo.**}>
   @type forward
   <buffer>
-    @type memory
+    @type file
+    path /dev/shm/fluentd/buffer
     total_limit_size 128m
     flush_mode interval
     flush_interval 10s

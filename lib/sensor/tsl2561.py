@@ -39,7 +39,7 @@ class TSL2561:
     POWER_OFF    	= 0x00
 
     gain = GAIN_1X
-    integ = INTEG_101MS
+    integ = INTEG_13MS
 
     def __init__(self, bus, dev_addr=DEV_ADDR):
         self.bus = bus
@@ -138,11 +138,11 @@ class TSL2561:
     def get_value(self):
         value = self.get_value_impl()
 
-        if (self.integ == self.INTEG_13MS) and (value[0] < 1000):
-            self.set_integ(self.INTEG_101MS)
+        if (self.integ != self.INTEG_402MS) and (value[0] < 100):
+            self.set_integ(self.INTEG_402MS)
             return self.get_value_impl()
-        elif (self.integ == self.INTEG_101MS) and (value[0] > 10000):
-            self.set_integ(self.INTEG_13MS)
+        elif (self.integ != self.INTEG_101MS) and (value[0] < 1000):
+            self.set_integ(self.INTEG_101MS)
             return self.get_value_impl()
         else:
             return value
