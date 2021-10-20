@@ -20,18 +20,22 @@ class ADS1015:
     DEV_ADDR            = 0x48 # 7bit
     REG_CONFIG          = 0x01
     REG_VALUE           = 0x00
+    REG_CONFIG_FSR_0256 = 5
+    REG_CONFIG_MUX_01   = 0
 
     def __init__(self, bus, dev_addr=DEV_ADDR):
         self.bus = bus
         self.dev_addr = dev_addr
         self.i2cbus = i2cbus.I2CBus(bus)
+        self.mux = self.REG_CONFIG_MUX_01
+        self.pga = self.REG_CONFIG_FSR_0256
 
     def init(self):
         os = 1
-        mux = 0
-        pga = 1
-        self.i2cbus.write(self.dev_addr,
-                          [self.REG_CONFIG, (os << 7) | (mux << 4) | (pga << 1), 0x03])
+        self.i2cbus.write(
+            self.dev_addr,
+            [self.REG_CONFIG, (os << 7) | (self.mux << 4) | (self.pga << 1), 0x03]
+        )
 
     def ping(self):
         try:
@@ -46,8 +50,9 @@ class ADS1015:
         self.i2cbus.write(self.dev_addr, [self.REG_VALUE])
 
         value = self.i2cbus.read(self.dev_addr, 2)
-        raw = int.from_bytes(value, byteorder='big', signed=True) >> 4
-        mvolt = raw*2
+        raw = int.from_bytes(value, byteorder='big', signed=True)
+        if self.pga == self.REG_CONFIG_FSR_0256:
+            mvolt = raw * 7.8125 / 1000
 
         return [ round(mvolt, 3) ]
 
@@ -61,7 +66,7 @@ if __name__ == '__main__':
     # TEST Code
     import pprint
     import sensor.ads1015
-    I2C_BUS = 0x1 # I2C のバス番号 (Raspberry Pi は 0x1)
+    I2C_BUS = 0x0 # I2C のバス番号 (Raspberry Pi は 0x1)
 
     ads1015 = sensor.ads1015.ADS1015(I2C_BUS)
 
