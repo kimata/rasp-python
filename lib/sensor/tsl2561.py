@@ -20,23 +20,23 @@ import i2cbus
 class TSL2561:
     NAME                = 'TSL2561'
 
-    DEV_ADDR		= 0x39 # 7bit
+    DEV_ADDR            = 0x39 # 7bit
 
-    REG_CTRL		= 0x80
-    REG_TIMING		= 0x81
-    REG_DATA0		= 0xAC
-    REG_DATA1		= 0xAE
-    REG_ID		= 0x8A
+    REG_CTRL            = 0x80
+    REG_TIMING          = 0x81
+    REG_DATA0           = 0xAC
+    REG_DATA1           = 0xAE
+    REG_ID              = 0x8A
 
-    INTEG_13MS      	= 0x00
-    INTEG_101MS     	= 0x01
-    INTEG_402MS     	= 0x02
+    INTEG_13MS          = 0x00
+    INTEG_101MS         = 0x01
+    INTEG_402MS         = 0x02
 
-    GAIN_1X         	= 0x00
-    GAIN_16X        	= 0x10
+    GAIN_1X             = 0x00
+    GAIN_16X            = 0x10
 
-    POWER_ON        	= 0x03
-    POWER_OFF    	= 0x00
+    POWER_ON            = 0x03
+    POWER_OFF           = 0x00
 
     gain = GAIN_1X
     integ = INTEG_13MS
@@ -52,8 +52,8 @@ class TSL2561:
         data = int.from_bytes(data, byteorder='big')
 
         if data != (self.gain | self.integ):
-            self.set_timing()
             self.disable()
+            self.set_timing()
 
         self.is_init = True
 
@@ -77,7 +77,7 @@ class TSL2561:
 
     def wait(self):
         if self.integ == self.INTEG_13MS:
-            time.sleep(0.13 + 0.1)
+            time.sleep(0.013 + 0.1)
         if self.integ == self.INTEG_101MS:
             time.sleep(0.101 + 0.1)
         if self.integ == self.INTEG_402MS:
