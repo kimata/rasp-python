@@ -33,10 +33,10 @@ class VEML6075:
     # For responsivity without a diffusor and IT = 100 ms:
     # UVA sensing resolution of 0.01 UVI = 9 counts
     # UVB sensing resolution of 0.01 UVI = 8 counts
-    UVA_RESP_50MS       = (0.01 / 9) / 0.5016286645
+    UVA_RESP_50MS       = (0.01 / 9) / 0.5016286645 # From SparkFun_VEML6075_Arduino_Library.cpp
     UVA_RESP_100MS      = (0.01 / 9)
 
-    UVB_RESP_50MS       = (0.01 / 8) / 0.5016286645
+    UVB_RESP_50MS       = (0.01 / 8) / 0.5016286645 # From SparkFun_VEML6075_Arduino_Library.cpp
     UVB_RESP_100MS      = (0.01 / 8)
 
     def __init__(self, bus, dev_addr=DEV_ADDR):
