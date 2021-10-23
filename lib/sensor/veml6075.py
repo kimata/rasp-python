@@ -26,6 +26,12 @@ class VEML6075:
     CONF_IT_50MS        = 0 << 4
     CONF_IT_100MS       = 1 << 4
 
+    CONF_AF_ENABLE      = 1 << 1
+    CONF_AF_DISABLE     = 0 << 1
+
+    CONF_TRIG_ONE       = 1 << 2
+    CONF_TRIG_NO        = 0 << 2
+
     CONF_SD_POWERON     = 0 << 0
     CONF_SD_SHUTDOWN    = 1 << 0
 
@@ -47,11 +53,17 @@ class VEML6075:
         self.disable()
 
     def enable(self):
-        self.i2cbus.write(self.dev_addr, [self.REG_UV_CONF, self.it|self.CONF_SD_POWERON, 0x00])
+        self.i2cbus.write(
+            self.dev_addr,
+            [self.REG_UV_CONF, self.it|self.CONF_TRIG_ONE|self.CONF_AF_ENABLE|self.CONF_SD_POWERON, 0x00]
+        )
         time.sleep(1.1)
 
     def disable(self):
-        self.i2cbus.write(self.dev_addr, [self.REG_UV_CONF, self.it|self.CONF_SD_SHUTDOWN, 0x00])
+        self.i2cbus.write(
+            self.dev_addr,
+            [self.REG_UV_CONF, self.it|self.CONF_AF_ENABLE|self.CONF_SD_SHUTDOWN, 0x00]
+        )
 
     def ping(self):
         try:
