@@ -22,19 +22,36 @@ class VEML6075:
     REG_UVCOMP1         = 0x0A
     REG_UVCOMP2         = 0x0B
     REG_DEVID           = 0x0C
-    
+
+    CONF_IT_50MS        = 0 << 4
+    CONF_IT_100MS       = 1 << 4
+
+    CONF_SD_POWERON     = 0 << 0
+    CONF_SD_SHUTDOWN    = 1 << 0
+
+    # designingveml6075.pdf
+    # For responsivity without a diffusor and IT = 100 ms:
+    # UVA sensing resolution of 0.01 UVI = 9 counts
+    # UVB sensing resolution of 0.01 UVI = 8 counts
+    UVA_RESP_50MS       = (0.01 / 9) / 0.5016286645
+    UVA_RESP_100MS      = (0.01 / 9)
+
+    UVB_RESP_50MS       = (0.01 / 8) / 0.5016286645
+    UVB_RESP_100MS      = (0.01 / 8)
+
     def __init__(self, bus, dev_addr=DEV_ADDR):
         self.bus = bus
         self.dev_addr = dev_addr
         self.i2cbus = i2cbus.I2CBus(bus)
-        self.is_init = False
+        self.it = self.CONF_IT_100MS
+        self.disable()
 
-    def init(self):
-        # 100ms
-        self.i2cbus.write(self.dev_addr, [self.REG_UV_CONF, 0x10, 0x00])
+    def enable(self):
+        self.i2cbus.write(self.dev_addr, [self.REG_UV_CONF, self.it|self.CONF_SD_POWERON, 0x00])
         time.sleep(1.1)
 
-        self.is_init = True
+    def disable(self):
+        self.i2cbus.write(self.dev_addr, [self.REG_UV_CONF, self.it|self.CONF_SD_SHUTDOWN, 0x00])
 
     def ping(self):
         try:
@@ -45,8 +62,7 @@ class VEML6075:
             return False
     
     def get_value(self):
-        if not self.is_init:
-            self.init()
+        self.enable()
 
         data = self.i2cbus.read(self.dev_addr, 2, self.REG_UVA)
         uva = int.from_bytes(data, byteorder='little')
@@ -60,8 +76,16 @@ class VEML6075:
         data = self.i2cbus.read(self.dev_addr, 2, self.REG_UVCOMP2)
         uvcomp2 = int.from_bytes(data, byteorder='little')
 
+        self.disable()
+
         uva_calc = uva - ((2.22 * 1.0 * uvcomp1) / 1.0) - ((1.33 * 1.0 * uvcomp2) / 1.0)
         uvb_calc = uvb - ((2.95 * 1.0 * uvcomp1) / 1.0) - ((1.75 * 1.0 * uvcomp2) / 1.0)
+
+        if self.it == self.CONF_IT_50MS:
+            uvi = ((uva_calc * self.UVA_RESP_50MS) + (uvb_calc * self.UVB_RESP_50MS)) / 2
+        else:
+            uvi = ((uva_calc * self.UVA_RESP_100MS) + (uvb_calc * self.UVB_RESP_100MS)) / 2
+
         uvi = ((uva_calc * 0.001461) + (uvb_calc * 0.002591)) / 2
 
         return [ round(uva_calc, 2), round(uvb_calc, 1), round(uvi, 1) ]
