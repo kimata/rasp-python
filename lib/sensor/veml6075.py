@@ -15,7 +15,7 @@ import i2cbus
 
 class VEML6075:
     NAME                = 'VEML6075'
-    DEV_ADDR		= 0x10 # 7bit
+    DEV_ADDR            = 0x10 # 7bit
     REG_UV_CONF         = 0x00
     REG_UVA             = 0x07
     REG_UVB             = 0x09
@@ -50,7 +50,11 @@ class VEML6075:
         self.dev_addr = dev_addr
         self.i2cbus = i2cbus.I2CBus(bus)
         self.it = self.CONF_IT_100MS
+        self.is_init = False
+
+    def init(self):
         self.disable()
+        self.is_init = True
 
     def enable(self):
         self.i2cbus.write(
@@ -74,6 +78,9 @@ class VEML6075:
             return False
     
     def get_value(self):
+        if not self.is_init:
+            self.init()
+
         self.enable()
 
         data = self.i2cbus.read(self.dev_addr, 2, self.REG_UVA)
