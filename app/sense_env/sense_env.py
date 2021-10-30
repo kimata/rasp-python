@@ -32,6 +32,7 @@ import sensor.apds9250
 import sensor.ccs811
 import sensor.k30
 import sensor.veml6075
+import sensor.veml7700
 import sensor.scd4x
 
 I2C_ARM_BUS = 0x1       # Raspberry Pi のデフォルトの I2C バス番号
@@ -52,7 +53,8 @@ def detect_sensor():
         sensor.apds9250.APDS9250(I2C_ARM_BUS),
         sensor.ccs811.CCS811(I2C_ARM_BUS),
         sensor.scd4x.SCD4x(I2C_ARM_BUS),
-        sensor.veml6075.VEML6075(I2C_ARM_BUS)
+        sensor.veml7700.VEML7700(I2C_ARM_BUS),
+        # sensor.veml6075.VEML6075(I2C_ARM_BUS),
     ]
     sensor_list = []
     for dev in candidate_list:
