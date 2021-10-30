@@ -54,7 +54,7 @@ def detect_sensor():
         sensor.ccs811.CCS811(I2C_ARM_BUS),
         sensor.scd4x.SCD4x(I2C_ARM_BUS),
         sensor.veml7700.VEML7700(I2C_ARM_BUS),
-        # sensor.veml6075.VEML6075(I2C_ARM_BUS),
+        sensor.veml6075.VEML6075(I2C_VC_BUS),
     ]
     sensor_list = []
     for dev in candidate_list:
