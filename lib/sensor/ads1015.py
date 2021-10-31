@@ -22,6 +22,7 @@ class ADS1015:
     REG_VALUE           = 0x00
     REG_CONFIG_FSR_0256 = 5
     REG_CONFIG_MUX_01   = 0
+    REG_CONFIG_MUX_0G   = 4
 
     def __init__(self, bus, dev_addr=DEV_ADDR):
         self.bus = bus
@@ -36,6 +37,9 @@ class ADS1015:
             self.dev_addr,
             [self.REG_CONFIG, (os << 7) | (self.mux << 4) | (self.pga << 1), 0x03]
         )
+
+    def set_mux(self, mux):
+        self.mux = mux
 
     def ping(self):
         try:
