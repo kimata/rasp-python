@@ -13,6 +13,15 @@
 
 <source>
   @type exec
+  tag fplug
+
+  command python3 "/home/ubuntu/rasp-python/app/sense_fplug/sense_fplug.py"
+  format json
+  run_interval 5s
+</source>
+
+<source>
+  @type exec
   tag wemo
 
   command python3 "/home/ubuntu/rasp-python/app/sense_wemo/sense_wemo.py"
@@ -27,7 +36,7 @@
   </record>
 </filter>
 
-<match {sensor.**,wemo.**}>
+<match {sensor.**,wemo.**,fplug.**}>
   @type forward
   <buffer>
     @type file
