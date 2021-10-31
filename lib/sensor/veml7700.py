@@ -21,7 +21,6 @@ class VEML7700:
     REG_ALS_CONF        = 0x00
     REG_ALS             = 0x04
 
-    ALS_GAIN_1X         = 0x00 << 11
     ALS_GAIN_1D8X       = 0x02 << 11
 
     ALS_IT_100MS        = 0x00 << 6
@@ -81,12 +80,9 @@ class VEML7700:
         als = int.from_bytes(value, byteorder='little')
 
         if self.integ == self.ALS_IT_25MS:
-            als *= 0.2304
+            als *= 1.8432
         elif self.integ == self.ALS_IT_100MS:
-            als *= 0.0576
-
-        if self.gain == self.ALS_GAIN_1D8X:
-            als *= 8
+            als *= 0.4608
 
         return [ als ];
 
