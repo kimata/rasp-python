@@ -21,6 +21,7 @@ class GROVE_TDS:
 
     def __init__(self, bus, dev_addr=DEV_ADDR):
         self.adc = sensor.ads1015.ADS1015(bus, dev_addr)
+        self.adc.set_mux(self.adc.REG_CONFIG_MUX_0G)
 
     def ping(self):
         return self.adc.ping()
