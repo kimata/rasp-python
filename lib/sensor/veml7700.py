@@ -45,13 +45,13 @@ class VEML7700:
         value = self.gain | self.integ | self.ALS_SD_POWER_ON
 
         self.i2cbus.write(self.dev_addr,
-                          [self.REG_ALS_CONF, (value >> 0) & 0xFF, (value >> 8) & 0xFF, ])
+                          [self.REG_ALS_CONF, (value >> 0) & 0xFF, (value >> 8) & 0xFF ])
 
     def disable(self):
         value = self.gain | self.integ | self.ALS_SD_POWER_OFF
 
         self.i2cbus.write(self.dev_addr,
-                          [self.REG_ALS_CONF, (value >> 0) & 0xFF, (value >> 8) & 0xFF, ])
+                          [self.REG_ALS_CONF, (value >> 0) & 0xFF, (value >> 8) & 0xFF ])
 
     def set_integ(self, integ):
         self.integ = integ
