@@ -85,9 +85,9 @@ class VEML7700:
         als = int.from_bytes(value, byteorder='little')
 
         if self.integ == self.ALS_IT_25MS:
-            als *= 0.042 * 2 * (100/25)
+            als *= 0.2304
         elif self.integ == self.ALS_IT_100MS:
-            als *= 0.042 * 2
+            als *= 0.0576
 
         if self.gain == self.ALS_GAIN_1D8X:
             als *= 8
