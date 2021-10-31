@@ -1,11 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-# TSL2562 を使って照度(LUX)を取得するライブラリです．
-#
-# 作成時に使用したのは，Strawberry Linux の
-#「TSL2561 照度センサ・モジュール」．
-# https://strawberry-linux.com/catalog/items?code=12561
+# VEML7700 を使って照度(LUX)を取得するライブラリです．
 
 import time
 import struct
@@ -20,25 +16,25 @@ import i2cbus
 class VEML7700:
     NAME                = 'VEML7700'
 
-    DEV_ADDR		= 0x10 # 7bit
+    DEV_ADDR            = 0x10 # 7bit
 
-    REG_ALS_CONF	= 0x00
-    REG_ALS		= 0x04
+    REG_ALS_CONF        = 0x00
+    REG_ALS             = 0x04
 
     ALS_GAIN_1X         = 0x00 << 11
     ALS_GAIN_1D8X       = 0x02 << 11
 
-    ALS_IT_100MS     	= 0x00 << 6
-    ALS_IT_25MS     	= 0x0C << 6
+    ALS_IT_100MS        = 0x00 << 6
+    ALS_IT_25MS         = 0x0C << 6
 
-    ALS_SD_POWER_ON    	= 0x00 << 0
-    ALS_SD_POWER_OFF  	= 0x01 << 0
+    ALS_SD_POWER_ON     = 0x00 << 0
+    ALS_SD_POWER_OFF    = 0x01 << 0
 
     def __init__(self, bus, dev_addr=DEV_ADDR):
         self.bus = bus
         self.dev_addr = dev_addr
         self.i2cbus = i2cbus.I2CBus(bus)
-        self.gain = self.ALS_GAIN_1X
+        self.gain = self.ALS_GAIN_1D8X
         self.integ = self.ALS_IT_25MS
 
     def enable(self):
@@ -50,7 +46,7 @@ class VEML7700:
     def disable(self):
         value = self.gain | self.integ | self.ALS_SD_POWER_OFF
 
-        self.i2cbus.write(self.dev_addr,
+        self.i2cbus.writep(self.dev_addr,
                           [self.REG_ALS_CONF, (value >> 0) & 0xFF, (value >> 8) & 0xFF ])
 
     def set_integ(self, integ):
