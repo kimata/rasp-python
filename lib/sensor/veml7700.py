@@ -21,10 +21,20 @@ class VEML7700:
     REG_ALS_CONF        = 0x00
     REG_ALS             = 0x04
 
-    ALS_GAIN_1D8X       = 0x02 << 11
-
-    ALS_IT_100MS        = 0x00 << 6
-    ALS_IT_25MS         = 0x0C << 6
+    ALS_GAIN            = {
+        1	: 0x0 << 11,
+        2	: 0x1 << 11,
+        0.125	: 0x2 << 11,
+        0.25	: 0x3 << 11,
+    }
+    ALS_IT            = {
+        100	: 0x0 << 6,
+        200	: 0x1 << 6,
+        400	: 0x2 << 6,
+        800	: 0x3 << 6,
+        50	: 0x8 << 6,
+        25	: 0xC << 6,
+    }
 
     ALS_SD_POWER_ON     = 0x00 << 0
     ALS_SD_POWER_OFF    = 0x01 << 0
@@ -33,17 +43,17 @@ class VEML7700:
         self.bus = bus
         self.dev_addr = dev_addr
         self.i2cbus = i2cbus.I2CBus(bus)
-        self.gain = self.ALS_GAIN_1D8X
-        self.integ = self.ALS_IT_25MS
+        self.gain = 0.125
+        self.integ = 25
 
     def enable(self):
-        value = self.gain | self.integ | self.ALS_SD_POWER_ON
+        value = self.ALS_GAIN[self.gain] | self.ALS_IT[self.integ]| self.ALS_SD_POWER_ON
 
         self.i2cbus.write(self.dev_addr,
                           [self.REG_ALS_CONF, (value >> 0) & 0xFF, (value >> 8) & 0xFF ])
 
     def disable(self):
-        value = self.gain | self.integ | self.ALS_SD_POWER_OFF
+        value = self.ALS_GAIN[self.gain] | self.ALS_IT[self.integ]| self.ALS_SD_POWER_OFF
 
         self.i2cbus.write(self.dev_addr,
                           [self.REG_ALS_CONF, (value >> 0) & 0xFF, (value >> 8) & 0xFF ])
@@ -55,10 +65,7 @@ class VEML7700:
         self.gain = gain
 
     def wait(self):
-        if self.integ == self.ALS_IT_25MS:
-            time.sleep(0.025 + 0.1)
-        elif self.integ == self.ALS_IT_100MS:
-            time.sleep(0.100 + 0.1)
+        time.sleep(self.integ/1000.0 + 0.1)
 
     def ping(self):
         try:
@@ -78,11 +85,7 @@ class VEML7700:
         self.disable()
 
         als = int.from_bytes(value, byteorder='little')
-
-        if self.integ == self.ALS_IT_25MS:
-            als *= 1.8432
-        elif self.integ == self.ALS_IT_100MS:
-            als *= 0.4608
+        als *= 0.0036 * (800 / self.integ) * (2 / self.gain)
 
         return [ als ];
 
@@ -90,7 +93,7 @@ class VEML7700:
         value = self.get_value_impl()
 
         if value[0] < 1000:
-            self.set_integ(self.ALS_IT_100MS)
+            self.set_integ(100)
             return self.get_value_impl()
         else:
             return value
