@@ -46,7 +46,7 @@ class VEML7700:
     def disable(self):
         value = self.gain | self.integ | self.ALS_SD_POWER_OFF
 
-        self.i2cbus.writep(self.dev_addr,
+        self.i2cbus.write(self.dev_addr,
                           [self.REG_ALS_CONF, (value >> 0) & 0xFF, (value >> 8) & 0xFF ])
 
     def set_integ(self, integ):
