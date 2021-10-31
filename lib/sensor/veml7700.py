@@ -100,9 +100,6 @@ class VEML7700:
         if value[0] < 1000:
             self.set_integ(self.ALS_IT_100MS)
             return self.get_value_impl()
-        elif value[0] > 10000:
-            self.set_gain(self.ALS_GAIN_1D8X)
-            return self.get_value_impl()
         else:
             return value
 
