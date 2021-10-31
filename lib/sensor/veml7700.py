@@ -97,10 +97,10 @@ class VEML7700:
     def get_value(self):
         value = self.get_value_impl()
 
-        if (self.integ != self.ALS_IT_100MS) and (value[0] < 1000):
+        if value[0] < 1000:
             self.set_integ(self.ALS_IT_100MS)
             return self.get_value_impl()
-        elif (self.integ != self.ALS_IT_100MS) and (value[0] > 10000):
+        elif value[0] > 10000:
             self.set_gain(self.ALS_GAIN_1D8X)
             return self.get_value_impl()
         else:
