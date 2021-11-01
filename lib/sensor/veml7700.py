@@ -87,6 +87,11 @@ class VEML7700:
         als = int.from_bytes(value, byteorder='little')
         als *= 0.0036 * (800 / self.integ) * (2 / self.gain)
 
+        if self.gain == 0.125:
+            # NOTE:
+            # https://www.vishay.com/docs/84367/designingveml6030.pdf
+            als = (6.0135E-13*als**4)-(9.3924E-9*als**3)+(8.1488E-5*als**2)+(1.0023E0*als)
+
         return [ als ];
 
     def get_value(self):
