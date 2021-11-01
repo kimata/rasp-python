@@ -20,7 +20,10 @@ class ADS1015:
     DEV_ADDR            = 0x48 # 7bit
     REG_CONFIG          = 0x01
     REG_VALUE           = 0x00
+
     REG_CONFIG_FSR_0256 = 5
+    REG_CONFIG_FSR_2048 = 2
+
     REG_CONFIG_MUX_01   = 0
     REG_CONFIG_MUX_0G   = 4
 
@@ -41,6 +44,9 @@ class ADS1015:
     def set_mux(self, mux):
         self.mux = mux
 
+    def set_pga(self, pga):
+        self.pga = pga
+
     def ping(self):
         try:
             value = self.i2cbus.read(self.dev_addr, 2, self.REG_CONFIG)
@@ -57,6 +63,8 @@ class ADS1015:
         raw = int.from_bytes(value, byteorder='big', signed=True)
         if self.pga == self.REG_CONFIG_FSR_0256:
             mvolt = raw * 7.8125 / 1000
+        elif self.pga == self.REG_CONFIG_FSR_2048:
+            mvolt = raw * 62.5 / 1000
 
         return [ round(mvolt, 3) ]
 
