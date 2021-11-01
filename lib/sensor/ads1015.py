@@ -20,8 +20,12 @@ class ADS1015:
     DEV_ADDR            = 0x48 # 7bit
     REG_CONFIG          = 0x01
     REG_VALUE           = 0x00
+
     REG_CONFIG_FSR_0256 = 5
+    REG_CONFIG_FSR_2048 = 2
+
     REG_CONFIG_MUX_01   = 0
+    REG_CONFIG_MUX_0G   = 4
 
     def __init__(self, bus, dev_addr=DEV_ADDR):
         self.bus = bus
@@ -36,6 +40,12 @@ class ADS1015:
             self.dev_addr,
             [self.REG_CONFIG, (os << 7) | (self.mux << 4) | (self.pga << 1), 0x03]
         )
+
+    def set_mux(self, mux):
+        self.mux = mux
+
+    def set_pga(self, pga):
+        self.pga = pga
 
     def ping(self):
         try:
@@ -53,6 +63,8 @@ class ADS1015:
         raw = int.from_bytes(value, byteorder='big', signed=True)
         if self.pga == self.REG_CONFIG_FSR_0256:
             mvolt = raw * 7.8125 / 1000
+        elif self.pga == self.REG_CONFIG_FSR_2048:
+            mvolt = raw * 62.5 / 1000
 
         return [ round(mvolt, 3) ]
 
