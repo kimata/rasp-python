@@ -49,7 +49,7 @@ class VEML6075:
         self.bus = bus
         self.dev_addr = dev_addr
         self.i2cbus = i2cbus.I2CBus(bus)
-        self.it = self.CONF_IT_100MS
+        self.it = self.CONF_IT_50MS
         self.is_init = False
 
     def init(self):
