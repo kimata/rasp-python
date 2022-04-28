@@ -38,7 +38,7 @@ class FD_Q10C:
             # 値に対して補正をかける．
             flow *= (14*14) / (12.7*12.7)
 
-            return round(flow, 2)
+            return round(flow, 3)
         except RuntimeError as e:
             driver.com_stop(spi, ser, True)
             raise
