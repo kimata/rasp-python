@@ -25,7 +25,7 @@ class BluetoothRSSI(object):
             b'6sB17s', bt.str2ba(self.addr), bt.ACL_LINK, b'\0' * 17)
         request = array.array('b', reqstr)
         handle = fcntl.ioctl(self.hci_fd, bt.HCIGETCONNINFO, request, 1)
-        handle = struct.unpack(b'8xH14x', request.tostring())[0]
+        handle = struct.unpack(b'8xH14x', request.tobytes())[0]
         self.cmd_pkt = struct.pack('H', handle)
 
     def connect(self):
@@ -58,8 +58,8 @@ class BluetoothRSSI(object):
             rssi = bt.hci_send_req(
                 self.hci_sock, bt.OGF_STATUS_PARAM,
                 bt.OCF_READ_RSSI, bt.EVT_CMD_COMPLETE, 4, self.cmd_pkt)
-            rssi = struct.unpack('b', rssi[3].to_bytes(1, 'big'))
-            return rssi
+            rssi = struct.unpack('b', rssi[3].encode('utf-8'))[0]
+            return [rssi]
         except IOError:
             # Happens if connection fails (e.g. device is not in range)
             self.connected = False
