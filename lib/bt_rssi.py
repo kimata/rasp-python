@@ -63,7 +63,7 @@ class BluetoothRSSI(object):
                 4,
                 self.cmd_pkt,
             )
-            rssi = struct.unpack("b", rssi[3].encode("utf-8"))[0]
+            rssi = struct.unpack("bbbb", rssi)[3]
             return [rssi]
         except IOError:
             # Happens if connection fails (e.g. device is not in range)
