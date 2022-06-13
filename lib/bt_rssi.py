@@ -6,6 +6,7 @@ import struct
 import array
 import fcntl
 
+
 class BluetoothRSSI(object):
     """Object class for getting the RSSI value of a Bluetooth address."""
 
@@ -21,19 +22,18 @@ class BluetoothRSSI(object):
 
     def prep_cmd_pkt(self):
         """Prepare the command packet for requesting RSSI."""
-        reqstr = struct.pack(
-            b'6sB17s', bt.str2ba(self.addr), bt.ACL_LINK, b'\0' * 17)
-        request = array.array('b', reqstr)
+        reqstr = struct.pack(b"6sB17s", bt.str2ba(self.addr), bt.ACL_LINK, b"\0" * 17)
+        request = array.array("b", reqstr)
         handle = fcntl.ioctl(self.hci_fd, bt.HCIGETCONNINFO, request, 1)
-        handle = struct.unpack(b'8xH14x', request.tobytes())[0]
-        self.cmd_pkt = struct.pack('H', handle)
+        handle = struct.unpack(b"8xH14x", request.tobytes())[0]
+        self.cmd_pkt = struct.pack("H", handle)
 
     def connect(self):
         """Connect to the Bluetooth device."""
         # Connecting via PSM 1 - Service Discovery
         self.bt_sock.connect_ex((self.addr, 1))
         self.connected = True
-    
+
     def close(self):
         """Close the bluetooth socket."""
         self.bt_sock.close()
@@ -56,9 +56,14 @@ class BluetoothRSSI(object):
             self.prep_cmd_pkt()
             # Send command to request RSSI
             rssi = bt.hci_send_req(
-                self.hci_sock, bt.OGF_STATUS_PARAM,
-                bt.OCF_READ_RSSI, bt.EVT_CMD_COMPLETE, 4, self.cmd_pkt)
-            rssi = struct.unpack('b', rssi[3].encode('utf-8'))[0]
+                self.hci_sock,
+                bt.OGF_STATUS_PARAM,
+                bt.OCF_READ_RSSI,
+                bt.EVT_CMD_COMPLETE,
+                4,
+                self.cmd_pkt,
+            )
+            rssi = struct.unpack("b", rssi[3].encode("utf-8"))[0]
             return [rssi]
         except IOError:
             # Happens if connection fails (e.g. device is not in range)
