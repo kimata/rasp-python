@@ -54,6 +54,7 @@ logger = get_logger()
 
 subprocess.call("sudo rfcomm unbind all", shell=True)
 
+is_all_fail = True
 
 for i, dev in enumerate(DEVICE_LIST[os.uname()[1]]):
     try:
@@ -85,6 +86,16 @@ for i, dev in enumerate(DEVICE_LIST[os.uname()[1]]):
 
         logger.info(result)
         print(result)
+
+        is_all_fail = False
     except:
         logger.warning(traceback.format_exc())
         pass
+
+
+if is_all_fail:
+    logger.warning("Restart the Bluetooth service because the error persists.")
+    cmd = "sudo /etc/init.d/bluetooth restart"
+
+    logger.warning(cmd)
+    logger.warning(os.popen(cmd).read())
