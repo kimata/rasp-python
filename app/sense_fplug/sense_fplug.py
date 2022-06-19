@@ -94,8 +94,15 @@ for i, dev in enumerate(DEVICE_LIST[os.uname()[1]]):
 
 
 if is_all_fail:
+    # NOTE: これで解決できるかまだ検証できてないけど，とりあえず仕込んでおく
     logger.warning("Restart the Bluetooth service because the error persists.")
-    cmd = "sudo /etc/init.d/bluetooth restart"
+    cmd_list = [
+        "/etc/init.d/bluetooth stop",
+        "sudo modprobe -r btusb",
+        "sudo modprobe btusb",
+        "/etc/init.d/bluetooth start",
+    ]
 
-    logger.warning(cmd)
-    logger.warning(os.popen(cmd).read())
+    for cmd in cmd_list:
+        logger.warning(cmd)
+        logger.warning(os.popen(cmd).read())
