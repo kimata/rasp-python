@@ -10,6 +10,7 @@ import logging
 import logging.handlers
 import gzip
 import threading
+import time
 import warnings
 
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, "lib"))
@@ -88,19 +89,12 @@ def fetch_data():
         except:
             logger.warning(traceback.format_exc())
             pass
-    return is_all_fail
+    return not is_all_fail
 
 
-logger = get_logger()
-
-subprocess.call("sudo rfcomm unbind all", shell=True)
-
-is_all_fail = fetch_data()
-
-
-if is_all_fail:
+def reset_bluetooth():
     # NOTE: これで解決できるかまだ検証できてないけど，とりあえず仕込んでおく
-    logger.warning("Restart the Bluetooth service because the error persists.")
+    logger.warning("Restart the Bluetooth services.")
     cmd_list = [
         "sudo /etc/init.d/bluetooth stop",
         "sudo modprobe -r btusb",
@@ -111,3 +105,35 @@ if is_all_fail:
     for cmd in cmd_list:
         logger.warning(cmd)
         logger.warning(os.popen(cmd).read())
+
+
+class TimeoutThread(threading.Thread):
+    def __init__(self):
+        super(TimeoutThread, self).__init__()
+        self._stop = threading.Event()
+
+    def kill(self):
+        self._stop.set()
+
+    def run(self):
+        for _ in ragne(60):
+            time.sleep(1)
+            if self._stop.is_set():
+                return
+        reset_bluetooth()
+
+
+logger = get_logger()
+
+subprocess.call("sudo rfcomm unbind all", shell=True)
+
+t = TimeoutThread()
+t.start()
+
+is_success = fetch_data()
+
+t.kill()
+t.join()
+
+if not is_success:
+    reset_bluetooth()
