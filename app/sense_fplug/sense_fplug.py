@@ -50,57 +50,59 @@ def get_logger():
     return logger
 
 
+def fetch_data():
+    for i, dev in enumerate(DEVICE_LIST[os.uname()[1]]):
+        try:
+            logger.info("DEVICE: {0} {1}".format(dev["name"], dev["addr"]))
+            dev_file = "/dev/rfcomm{0}".format(i)
+            if not os.path.exists(dev_file):
+                subprocess.call(
+                    "sudo rfcomm bind {0} {1}".format(i, dev["addr"]), shell=True
+                )
+
+            btrssi = BluetoothRSSI(dev["addr"])
+            rssi = -100
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", DeprecationWarning)
+            rssi = btrssi.request_rssi()[0]
+            fplug = FPlugDevice(dev_file, comm_wait=0.2)
+
+            result = json.dumps(
+                {
+                    "hostname": dev["name"],
+                    "power": fplug.get_power_realtime(),
+                    "temp": fplug.get_temperature(),
+                    "humi": fplug.get_humidity(),
+                    "rssi": rssi,
+                    "self_time": 0,
+                },
+                ensure_ascii=False,
+            )
+
+            logger.info(result)
+            print(result)
+        except:
+            logger.warning(traceback.format_exc())
+            pass
+
+
 logger = get_logger()
 
 subprocess.call("sudo rfcomm unbind all", shell=True)
 
-is_all_fail = True
 
-for i, dev in enumerate(DEVICE_LIST[os.uname()[1]]):
-    try:
-        logger.info("DEVICE: {0} {1}".format(dev["name"], dev["addr"]))
-        dev_file = "/dev/rfcomm{0}".format(i)
-        if not os.path.exists(dev_file):
-            subprocess.call(
-                "sudo rfcomm bind {0} {1}".format(i, dev["addr"]), shell=True
-            )
+t = threading.Thread(target=fetch_data, daemon=True)
+t.start()
+t.join(timeout=60)
 
-        btrssi = BluetoothRSSI(dev["addr"])
-        rssi = -100
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", DeprecationWarning)
-            rssi = btrssi.request_rssi()[0]
-        fplug = FPlugDevice(dev_file, comm_wait=0.2)
-
-        result = json.dumps(
-            {
-                "hostname": dev["name"],
-                "power": fplug.get_power_realtime(),
-                "temp": fplug.get_temperature(),
-                "humi": fplug.get_humidity(),
-                "rssi": rssi,
-                "self_time": 0,
-            },
-            ensure_ascii=False,
-        )
-
-        logger.info(result)
-        print(result)
-
-        is_all_fail = False
-    except:
-        logger.warning(traceback.format_exc())
-        pass
-
-
-if is_all_fail:
+if t.is_alive:
     # NOTE: これで解決できるかまだ検証できてないけど，とりあえず仕込んでおく
     logger.warning("Restart the Bluetooth service because the error persists.")
     cmd_list = [
-        "/etc/init.d/bluetooth stop",
+        "sudo /etc/init.d/bluetooth stop",
         "sudo modprobe -r btusb",
         "sudo modprobe btusb",
-        "/etc/init.d/bluetooth start",
+        "sudo /etc/init.d/bluetooth start",
     ]
 
     for cmd in cmd_list:
