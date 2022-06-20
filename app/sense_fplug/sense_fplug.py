@@ -52,6 +52,7 @@ def get_logger():
 
 
 def fetch_data():
+    is_all_fail = True
     for i, dev in enumerate(DEVICE_LIST[os.uname()[1]]):
         try:
             logger.info("DEVICE: {0} {1}".format(dev["name"], dev["addr"]))
@@ -82,21 +83,22 @@ def fetch_data():
 
             logger.info(result)
             print(result)
+
+            is_all_fail = False
         except:
             logger.warning(traceback.format_exc())
             pass
+    return is_all_fail
 
 
 logger = get_logger()
 
 subprocess.call("sudo rfcomm unbind all", shell=True)
 
+is_all_fail = fetch_data()
 
-t = threading.Thread(target=fetch_data)
-t.start()
-t.join(timeout=120)
 
-if t.is_alive:
+if is_all_fail:
     # NOTE: これで解決できるかまだ検証できてないけど，とりあえず仕込んでおく
     logger.warning("Restart the Bluetooth service because the error persists.")
     cmd_list = [
