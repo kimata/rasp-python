@@ -94,7 +94,7 @@ subprocess.call("sudo rfcomm unbind all", shell=True)
 
 t = threading.Thread(target=fetch_data)
 t.start()
-t.join(timeout=60)
+t.join(timeout=120)
 
 if t.is_alive:
     # NOTE: これで解決できるかまだ検証できてないけど，とりあえず仕込んでおく
