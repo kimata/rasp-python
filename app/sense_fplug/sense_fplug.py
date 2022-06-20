@@ -92,7 +92,7 @@ logger = get_logger()
 subprocess.call("sudo rfcomm unbind all", shell=True)
 
 
-t = threading.Thread(target=fetch_data, daemon=True)
+t = threading.Thread(target=fetch_data)
 t.start()
 t.join(timeout=60)
 
