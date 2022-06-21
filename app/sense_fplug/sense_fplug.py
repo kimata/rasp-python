@@ -110,17 +110,19 @@ def reset_bluetooth():
 class TimeoutThread(threading.Thread):
     def __init__(self):
         super(TimeoutThread, self).__init__()
-        self._stop = threading.Event()
+        self.stop_flag = threading.Event()
 
     def kill(self):
-        self._stop.set()
+        self.stop_flag.set()
 
     def run(self):
-        for _ in ragne(60):
+        for _ in range(60):
             time.sleep(1)
-            if self._stop.is_set():
-                return
-        reset_bluetooth()
+            if self.stop_flag.is_set():
+                break
+
+        if not self.stop_flag.is_set():
+            reset_bluetooth()
 
 
 logger = get_logger()
