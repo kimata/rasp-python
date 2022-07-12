@@ -48,7 +48,7 @@
     retry_max_interval 30m
   </buffer>
   <server>
-    host "columbia.green-rabbit.net"
+    host "tanzania.green-rabbit.net"
   </server>
 </match>
 
@@ -60,10 +60,9 @@
 
 <label @FLUENT_LOG>
   <match fluent.*>
-    @type stdout
-    # @type forward
-    # <server>
-    #   host "columbia.green-rabbit.net"
-    # </server>
+    @type forward
+    <server>
+      host "tanzania.green-rabbit.net"
+    </server>
   </match>
 </label>
