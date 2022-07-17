@@ -48,7 +48,7 @@
     retry_max_interval 30m
   </buffer>
   <server>
-    host "tanzania.green-rabbit.net"
+    host "proxya.green-rabbit.net"
   </server>
 </match>
 
@@ -62,7 +62,7 @@
   <match fluent.*>
     @type forward
     <server>
-      host "tanzania.green-rabbit.net"
+      host "proxy.green-rabbit.net"
     </server>
   </match>
 </label>
