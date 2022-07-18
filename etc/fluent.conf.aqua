@@ -48,7 +48,7 @@
     retry_max_interval 30m
   </buffer>
   <server>
-    host "proxya.green-rabbit.net"
+    host "proxy.green-rabbit.net"
   </server>
 </match>
 
