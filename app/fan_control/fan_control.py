@@ -1,45 +1,62 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# 
+#
 # InfluxDB に記録された外気温と室内気温に基づいて
 # 換気扇を自動制御します．
 
-import json
-import urllib.request
 import subprocess
 import sys
-import time
 import logging
 import logging.handlers
 import gzip
+import pathlib
+import yaml
 import os
+import influxdb_client
 
-PWM_KHZ = 25
-PWM_DUTY_ON = 30
+FLUX_QUERY = """
+from(bucket: "{bucket}")
+    |> range(start: -{period})
+    |> filter(fn:(r) => r._measurement == "{measure}")
+    |> filter(fn: (r) => r.hostname == "{hostname}")
+    |> filter(fn: (r) => r["_field"] == "{param}")
+    |> aggregateWindow(every: 3m, fn: mean, createEmpty: false)
+    |> exponentialMovingAverage(n: 3)
+    |> sort(columns: ["_time"], desc: true)
+    |> limit(n: 1)
+"""
 
-GPIO_SW = 15
+CONFIG_PATH = "./config.yml"
 
-INFLUXDB_HOST = '192.168.0.10:8086'
+
+def load_config():
+    path = str(pathlib.Path(os.path.dirname(__file__), CONFIG_PATH))
+    with open(path, "r") as file:
+        return yaml.load(file, Loader=yaml.SafeLoader)
+
 
 class GZipRotator:
     def namer(name):
-        return name + '.gz'
+        return name + ".gz"
 
     def rotator(source, dest):
-        with open(source, 'rb') as fs:
-            with gzip.open(dest, 'wb') as fd:
+        with open(source, "rb") as fs:
+            with gzip.open(dest, "wb") as fd:
                 fd.writelines(fs)
         os.remove(source)
+
 
 def get_logger():
     logger = logging.getLogger()
     log_handler = logging.handlers.RotatingFileHandler(
-        '/dev/shm/fan_control.log',
-        encoding='utf8', maxBytes=1*1024*1024, backupCount=10,
+        "/dev/shm/fan_control.log",
+        encoding="utf8",
+        maxBytes=1 * 1024 * 1024,
+        backupCount=10,
     )
     log_handler.formatter = logging.Formatter(
-        fmt='%(asctime)s %(levelname)s %(name)s :%(message)s',
-        datefmt='%Y/%m/%d %H:%M:%S %Z'
+        fmt="%(asctime)s %(levelname)s %(name)s :%(message)s",
+        datefmt="%Y/%m/%d %H:%M:%S %Z",
     )
     log_handler.namer = GZipRotator.namer
     log_handler.rotator = GZipRotator.rotator
@@ -49,31 +66,50 @@ def get_logger():
 
     return logger
 
-def influxdb_get(db, host, name):
-    url = 'http://' + INFLUXDB_HOST + '/query'
 
-    params = {
-        'db': 'sensor',
-        'q': ('SELECT {} FROM "{}" WHERE "hostname" = \'{}\' AND time > now() - {} ' + 
-              'ORDER by time desc LIMIT {}').format(name, db, host, '1h', '1')
-    }
-    data = urllib.parse.urlencode(params).encode("utf-8")
+def get_db_value(
+    config,
+    hostname,
+    measure,
+    param,
+):
+    client = influxdb_client.InfluxDBClient(
+        url=config["influxdb"]["url"],
+        token=config["influxdb"]["token"],
+        org=config["influxdb"]["org"],
+    )
 
-    try:
-        with urllib.request.urlopen(url, data=data) as res:
-            result = res.read().decode("utf-8")
-            return json.loads(result)['results'][0]['series'][0]['values'][0][1]
-    except:
-        return None
+    query_api = client.query_api()
 
-def fan_ctrl(mode):
-    subprocess.call('sudo gpio mode 1 pwm', shell=True)
-    subprocess.call('sudo gpio pwm-ms', shell=True)
-    subprocess.call('sudo gpio pwmc {}'.format(int(19200 / 100 / PWM_KHZ)), shell=True)
-    subprocess.call('sudo gpio pwmr 100', shell=True)
-    subprocess.call('sudo gpio pwm 1 {}'.format(100 - PWM_DUTY_ON), shell=True)
-    subprocess.call('sudo gpio -g mode {} out'.format(GPIO_SW), shell=True)
-    subprocess.call('sudo gpio -g write {} {}'.format(GPIO_SW, 1 if mode else 0), shell=True)
+    table_list = query_api.query(
+        query=FLUX_QUERY.format(
+            bucket=config["influxdb"]["bucket"],
+            measure=measure,
+            hostname=hostname,
+            param=param,
+            period="1h",
+        )
+    )
+
+    return table_list[0].records[0].get_value()
+
+
+def fan_ctrl(config, mode):
+    subprocess.call("sudo gpio mode 1 pwm", shell=True)
+    subprocess.call("sudo gpio pwm-ms", shell=True)
+    subprocess.call(
+        "sudo gpio pwmc {}".format(int(19200 / 100 / config["pwm"]["khz"])), shell=True
+    )
+    subprocess.call("sudo gpio pwmr 100", shell=True)
+    subprocess.call(
+        "sudo gpio pwm 1 {}".format(100 - config["pwm"]["duty_on"]), shell=True
+    )
+    subprocess.call("sudo gpio -g mode {} out".format(config["gpio"]["sw"]), shell=True)
+    subprocess.call(
+        "sudo gpio -g write {} {}".format(config["gpio"]["sw"], 1 if mode else 0),
+        shell=True,
+    )
+
 
 def judge_fan_state(temp_out, temp_room, volt_batt):
     # 温度とバッテリー電圧に基づいてファンの ON/OFF を決める
@@ -93,23 +129,26 @@ def judge_fan_state(temp_out, temp_room, volt_batt):
     return False
 
 
+config = load_config()
 logger = get_logger()
 
-temp_out = influxdb_get('sensor.esp32', 'ESP32-outdoor-1', 'temp')
-temp_room = influxdb_get('sensor.raspberrypi', 'rasp-storeroom', 'temp')
-volt_batt = influxdb_get('sensor.raspberrypi', 'rasp-storeroom', 'battery_voltage')
+temp_out = get_db_value(config, "ESP32-outdoor-1", "sensor.esp32", "temp")
+temp_room = get_db_value(config, "rasp-storeroom", "sensor.rasp", "temp")
+volt_batt = get_db_value(config, "rasp-storeroom", "sensor.rasp", "battery_voltage")
 
 if len(sys.argv) == 1:
     state = judge_fan_state(temp_out, temp_room, volt_batt)
 else:
-    state = sys.argv[1].lower() == 'on'
+    state = sys.argv[1].lower() == "on"
 
-fan_ctrl(state)
+fan_ctrl(config, state)
 
-print('FAN is {}'.format('ON' if state else 'OFF'))
+print("FAN is {}".format("ON" if state else "OFF"))
 
-logger.info('FAN: {} (temp_out: {:.2f}, temp_room: {:.2f})'.format(
-    'ON' if state else 'OFF',
-    temp_out if temp_out is not None else 0.0,
-    temp_room if temp_room is not None else 0.0,
-))
+logger.info(
+    "FAN: {} (temp_out: {:.2f}, temp_room: {:.2f})".format(
+        "ON" if state else "OFF",
+        temp_out if temp_out is not None else 0.0,
+        temp_room if temp_room is not None else 0.0,
+    )
+)

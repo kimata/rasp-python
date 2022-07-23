@@ -1,0 +1,12 @@
+influxdb:
+  url: http://tanzania.green-rabbit.net:8086
+  token: fffjkjkgfklhjglkjiojtroijojhkljhklghklfjklhhlnklhnklfgnhklgnhgfdlhfgnhlkngdfnfnhgdkfnh==
+  org: home
+  bucket: sensor
+
+pwm:
+  khz: 25
+  duty_on: 30
+
+gpio:
+  sw: 15
