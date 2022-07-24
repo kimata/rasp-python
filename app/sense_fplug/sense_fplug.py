@@ -88,12 +88,12 @@ def fetch_data():
             is_all_fail = False
         except:
             logger.warning(traceback.format_exc())
+            reset_bluetooth()
             pass
     return not is_all_fail
 
 
 def reset_bluetooth():
-    # NOTE: これで解決できるかまだ検証できてないけど，とりあえず仕込んでおく
     logger.warning("Restart the Bluetooth services.")
     cmd_list = [
         "sudo /etc/init.d/bluetooth stop",
